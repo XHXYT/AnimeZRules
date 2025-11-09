@@ -1,0 +1,88 @@
+{
+  "version": "1.0.0",
+  "sources": [
+    {
+      "key": "key_agedmvideo",
+      "version": "1.0.1",
+      "name": "AGE动漫",
+      "group": "动漫",
+      "baseUrl": "https://www.agedm.io/",
+      "enabled": true,
+      "priority": 1,
+      "defaultSource": true,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "search?query={keyword}",
+            "listSelector": "div.row > div > div",
+            "urlNeedBaseUrl": false,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": "img@data-original",
+              "title": "img@alt",
+              "episode": "div > div.video_cover > div > span"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "listSelector": "div.video_list_box.recommend_list > div.video_list_box--bd > div > div",
+            "urlNeedBaseUrl": false,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": "img@data-original",
+              "title": "a",
+              "episode": "span"
+            }
+          },
+          "category": {
+            "title": "h6",
+            "titles": "div.video_list_box--hd",
+            "moreUrl": "h6 > a@href",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "div.video_list_box > div.video_list_box--bd",
+            "videos": {
+              "listSelector": "div.col",
+              "urlNeedBaseUrl": false,
+              "itemSelectors": {
+                "url": "a@href",
+                "imgUrl": "img@data-original",
+                "title": "a",
+                "episode": "span"
+              }
+            }
+          }
+        },
+        "detail": {
+          "titleSelector": "section > div > div.video_detail_right.ps-3.flex-grow-1 > h2",
+          "descSelector": "div.video_detail_right.ps-3.flex-grow-1 > div.video_detail_desc.py-2",
+          "coverSelector": "section > div > div.video_detail_left > div.video_detail_cover > img@data-original",
+          "categorySelector": "div.video_detail_box.detail_baseinfo.my-2 > div > div > div > ul > li:nth-child(9) > span:nth-child(2)",
+          "episodes": {
+            "routeTitlesSelector": "div.video_detail_playlist_wrapper.pt-4 > ul > li",
+            "routeContainersSelector": "div.video_detail_playlist_wrapper.pt-4 > div.tab-content > div",
+            "itemSelector": "ul > li",
+            "itemSelectors": {
+              "url": "a@href",
+              "title": "a"
+            }
+          },
+          "recommends": {
+            "listSelector": "div.video_list_box.video_detail_recommend_wrapper.pt-4 > div.video_list_box--bd > div > div",
+            "urlNeedBaseUrl": false,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": "img@data-original",
+              "title": "a",
+              "episode": "span"
+            }
+          }
+        },
+        "videoUrl": {
+          "urlSelector": "iframe#iframeForVideo@src",
+          "iframeSelector": "var video = document.querySelector(\"#artplayer > div > video\");\n            video ? video.src : \"元素未找到或没有src属性\""
+        }
+      }
+    }
+  ]
+}
