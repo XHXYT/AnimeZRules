@@ -2,7 +2,7 @@
 
 AnimeZ 规则仓库 —— 为 [AnimeZ](https://github.com/XHXYT/AnimeZ) 编写源配置，欢迎参与构建沃
 
-只要会看浏览器开发者工具，你就能为自己的追番网站写一个源。**不会写代码也没关系**：大部分网站只需要填几十行 JSON 就能跑起来，跟着[写源指南](docs/source-guide.html)从零开始，半小时就能提交你的第一个源。
+只要会看浏览器开发者工具，你就能为自己的追番网站写一个源。**不会写代码也没关系**：大部分网站只需要填几十行 JSON 就能跑起来，跟着[写源指南](https://xhxyt.github.io/AnimeZRules/source-guide.html)从零开始，半小时就能提交你的第一个源。
 
 ## 可用规则
 
@@ -24,12 +24,12 @@ AnimeZ 规则仓库 —— 为 [AnimeZ](https://github.com/XHXYT/AnimeZ) 编写�
 
 ## 如何编写一个源
 
-完整字段说明、选择器语法、模板语法、写源实战教程见 **[写源指南](docs/source-guide.html)**。
+完整字段说明、选择器语法、模板语法、写源实战教程见 **[写源指南](https://xhxyt.github.io/AnimeZRules/source-guide.html)**。
 
 两种写法任选：
 
 - **电脑写 JSON 导入**：结构最接近的现有源文件复制一份，改 `baseUrl` 和各选择器；
-- **应用内直接填写**：视频源页（我的 → 设置 → 视频源）→ 更多菜单 → 添加新数据源（或点击已有源编辑），每个输入框都有提示文案，指南的[应用内编辑器对照](docs/source-guide.html#editor)一节把每个输入框与配置字段逐一对应，纯手机也能写源。
+- **应用内直接填写**：视频源页（我的 → 设置 → 视频源）→ 更多菜单 → 添加新数据源（或点击已有源编辑），每个输入框都有提示文案，指南的[应用内编辑器对照](https://xhxyt.github.io/AnimeZRules/source-guide.html#editor)一节把每个输入框与配置字段逐一对应，纯手机也能写源。
 
 快速印象——一个 HTML 源的核心就是"在哪找列表、每项取哪些字段"：
 
@@ -54,7 +54,7 @@ AnimeZ 规则仓库 —— 为 [AnimeZ](https://github.com/XHXYT/AnimeZ) 编写�
 不想手动分析选择器？本仓库自带一个面向 AI 的写源技能 [`skills/animez-source/SKILL.md`](skills/animez-source/SKILL.md)（标准 Agent Skills 格式）。把仓库克隆到本地后：
 
 - **Claude Code** 等支持 skills 的工具：将该文件夹复制（或软链）到 `~/.claude/skills/`（或项目的 `.claude/skills/`）；
-- 其他 AI 工具：直接把 `SKILL.md` 连同它引用的 [写源指南](docs/source-guide.html) 和任一现成源文件发给 AI 即可。
+- 其他 AI 工具：直接把 `SKILL.md` 连同它引用的 [写源指南](https://xhxyt.github.io/AnimeZRules/source-guide.html) 和任一现成源文件发给 AI 即可。
 
 之后对 AI 说"帮我给 xx 网站写一个 AnimeZ 源"，它会按照技能里的工作流（判定模式 → 站点勘察 → 起草 → 自检 → 验证）产出配置。
 
