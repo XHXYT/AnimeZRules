@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnimeZ 写源指南</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-soft: #f6f8fa;
+    --sidebar-bg: #f6f8fa;
+    --sidebar-text: #57606a;
+    --sidebar-strong: #24292f;
+    --sidebar-divider: #d0d7de;
+    --sidebar-active: #0969da;
+    --sidebar-active-bg: rgba(9,105,218,.07);
+    --text: #24292f;
+    --text-muted: #57606a;
+    --border: #d0d7de;
+    --accent: #0969da;
+    --code-bg: #f6f8fa;
+    --code-border: #d0d7de;
+    --table-head: #f6f8fa;
+    --note-bg: #fff8e6;
+    --note-border: #f0c36d;
+    --warn-bg: #fff0f0;
+    --warn-border: #e5534b;
+    --ok-bg: #eefbf0;
+    --ok-border: #4c9a57;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #161a22;
+      --bg-soft: #1d232e;
+      --sidebar-bg: #12161d;
+      --sidebar-text: #a9b4c3;
+      --sidebar-strong: #f0f3f7;
+      --sidebar-divider: #2d3542;
+      --sidebar-active: #4fc3f7;
+      --sidebar-active-bg: rgba(79,195,247,.10);
+      --text: #d6dbe3;
+      --text-muted: #9aa4b2;
+      --border: #2d3542;
+      --accent: #58a6ff;
+      --code-bg: #1d232e;
+      --code-border: #2d3542;
+      --table-head: #1d232e;
+      --note-bg: #2b2617;
+      --note-border: #8a6d2f;
+      --warn-bg: #2e1c1c;
+      --warn-border: #a0433d;
+      --ok-bg: #1a2b1e;
+      --ok-border: #4c9a57;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+  body {
+    margin: 0;
+    font-family: "HarmonyOS Sans SC", "Microsoft YaHei", -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.75;
+    font-size: 15px;
+  }
+  .layout { display: flex; min-height: 100vh; }
+
+  /* ---------- 侧栏 ---------- */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    padding: 24px 0 40px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+  .sidebar .brand {
+    padding: 0 20px 18px;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--sidebar-strong);
+    border-bottom: 1px solid var(--sidebar-divider);
+    margin-bottom: 12px;
+  }
+  .sidebar .brand small { display: block; font-size: 12px; font-weight: 400; color: var(--sidebar-text); margin-top: 2px; }
+  .sidebar a {
+    display: block;
+    padding: 6px 20px 6px 28px;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    font-size: 13.5px;
+    border-left: 3px solid transparent;
+  }
+  .sidebar a:hover { color: var(--sidebar-strong); }
+  .sidebar a.active { color: var(--sidebar-active); border-left-color: var(--sidebar-active); background: var(--sidebar-active-bg); }
+  .sidebar a.sub { padding-left: 44px; font-size: 12.8px; }
+  .sidebar .group-label { padding: 14px 20px 4px; font-size: 11.5px; letter-spacing: 1px; opacity: .75; font-weight: 600; text-transform: uppercase; }
+
+  /* ---------- 内容区 ---------- */
+  .content { flex: 1; min-width: 0; padding: 36px 48px 80px; max-width: 980px; }
+  .content h1 { font-size: 30px; border-bottom: 1px solid var(--border); padding-bottom: 12px; margin-top: 8px; }
+  .content h2 { font-size: 23px; margin-top: 52px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .content h3 { font-size: 18px; margin-top: 34px; }
+  .content h4 { font-size: 15.5px; margin-top: 26px; }
+  .content p { margin: 12px 0; }
+  .content a { color: var(--accent); }
+  code {
+    font-family: "JetBrains Mono", Consolas, "Courier New", monospace;
+    font-size: 13px;
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 4px;
+    padding: 1px 6px;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  pre code { background: none; border: none; padding: 0; }
+  table { border-collapse: collapse; width: 100%; margin: 16px 0; font-size: 13.8px; }
+  th, td { border: 1px solid var(--border); padding: 7px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--table-head); white-space: nowrap; }
+  td code, th code { white-space: nowrap; }
+  .note, .warn, .ok {
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border: 1px solid;
+  }
+  .note { background: var(--note-bg); border-color: var(--note-border); }
+  .warn { background: var(--warn-bg); border-color: var(--warn-border); }
+  .ok { background: var(--ok-bg); border-color: var(--ok-border); }
+  .note::before { content: "💡 提示  "; font-weight: 700; }
+  .warn::before { content: "⚠️ 注意  "; font-weight: 700; }
+  .ok::before { content: "✅  "; font-weight: 700; }
+  .tag {
+    display: inline-block;
+    font-size: 12px;
+    border-radius: 10px;
+    padding: 0 8px;
+    margin-left: 6px;
+    vertical-align: 2px;
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+  }
+  .tag.req { color: #cf222e; border-color: #cf222e55; }
+  .tag.opt { color: #1a7f37; border-color: #1a7f3755; }
+  @media (prefers-color-scheme: dark) {
+    .tag.req { color: #ff7b72; }
+    .tag.opt { color: #7ee787; }
+  }
+  .toc-top { font-size: 13px; color: var(--text-muted); }
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; }
+    .sidebar { position: static; width: 100%; height: auto; }
+    .content { padding: 24px 18px 60px; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav class="sidebar" id="sidebar">
+  <div class="brand">AnimeZ 写源指南<small>视频源配置完整文档</small></div>
+  <div class="group-label">开始</div>
+  <a href="#intro">写源是什么</a>
+  <a href="#structure">文件结构</a>
+  <a href="#base-fields">源基础字段</a>
+  <a href="#login">登录配置 login</a>
+  <div class="group-label">解析配置</div>
+  <a href="#parser-overview">parserConfig 总览</a>
+  <a href="#selector-syntax">选择器语法（HTML）</a>
+  <a href="#template-syntax">路径与模板（JSON）</a>
+  <div class="group-label">四大功能块</div>
+  <a href="#search">搜索 search</a>
+  <a href="#homepage">首页 homepage</a>
+  <a href="#detail">详情 detail</a>
+  <a href="#episodes">选集 episodes</a>
+  <a href="#recommends">推荐 recommends</a>
+  <a href="#videourl">播放地址 videoUrl</a>
+  <div class="group-label">进阶</div>
+  <a href="#postprocess">字段后处理</a>
+  <a href="#webview-js">WebView JS 解析</a>
+  <div class="group-label">实战</div>
+  <a href="#tutorial">写源实战教程</a>
+  <a href="#editor">应用内编辑器对照</a>
+  <a href="#examples">完整示例</a>
+  <a href="#debug">调试与常见问题</a>
+</nav>
+
+<main class="content">
+
+<h1 id="intro">AnimeZ 写源指南</h1>
+<p>一个"源"就是一个 JSON 文件，它告诉 AnimeZ：</p>
+<ul>
+  <li>去<strong>哪个地址</strong>请求（搜索页 / 接口）</li>
+  <li>从返回内容里<strong>怎么取</strong>出视频列表和字段</li>
+  <li>详情页、选集、真实播放地址<strong>怎么解析</strong></li>
+</ul>
+<p>写源有两条路：在电脑上写 JSON 文件再导入应用，或者<strong>直接在应用内的源编辑页填写</strong>（视频源页 → 添加新数据源 / 点击已有源）。两者完全等价，本档前半部分讲清每个配置字段的含义，<a href="#editor">应用内编辑器对照</a>一节则把编辑页每个输入框逐一对应到这些字段——纯手机操作时建议开着本页对照填写。</p>
+<p>AnimeZ 引擎支持两种解析模式，由 <code>parserConfig.sourceType</code> 决定：</p>
+<table>
+  <tr><th>模式</th><th>适用站点</th><th>定位方式</th><th>典型例子</th></tr>
+  <tr>
+    <td><code>"html"</code>（默认）</td>
+    <td>传统服务端渲染网页（苹果 CMS 模板站等）</td>
+    <td>CSS 选择器（如 <code>a.module-item@href</code>）</td>
+    <td>各类苹果 CMS 模板站</td>
+  </tr>
+  <tr>
+    <td><code>"json"</code></td>
+    <td>前后端分离站点（REST API）</td>
+    <td>JSON 路径 + <code>{字段}</code> 模板</td>
+    <td>各类提供公开接口的站点</td>
+  </tr>
+</table>
+<p>两种模式可以混用同一套配置结构：JSON 模式下，原本填 CSS 选择器的字段改填 JSON 路径或模板；个别字段是 JSON 模式专属（如 <code>listPath</code>、<code>jsonRoutesPath</code>），文档中会单独标注。</p>
+
+<h2 id="structure">文件结构</h2>
+<p>一个规则文件 = 一个 <code>sources</code> 数组 + 元信息：</p>
+<pre><code>{
+  "version": "1.0.0",            // 配置版本号
+  "author": "yourname",          // 作者
+  "update_time": "2026-09-23",   // 更新日期
+  "sources": [
+    {
+      // 这里是一个数据源（DataSourceConfig），见下一节
+    }
+  ]
+}</code></pre>
+<div class="note">应用"导入数据源"还兼容<strong>单个源对象</strong>和<strong>源对象数组</strong>两种格式，但提交到本仓库时请统一使用上面的完整格式。</div>
+<div class="note">导入时，文件级的 <code>author</code> / <code>update_time</code> 会自动<strong>下沉</strong>到每个未自带这两个字段的源上（源级字段优先）。也就是说文件里写了 <code>"author": "user"</code>，导入后每个源的"作者"都会是 user，可在应用内编辑页单独修改。</div>
+
+<h2 id="base-fields">源基础字段</h2>
+<p>每个 <code>sources[]</code> 元素的结构：</p>
+<table>
+  <tr><th>字段</th><th>类型</th><th>必填</th><th>说明</th></tr>
+  <tr><td><code>key</code></td><td>string</td><td><span class="tag req">必填</span></td><td>源唯一标识，全局不重复，建议 <code>key_</code> + 缩写，如 <code>key_example</code></td></tr>
+  <tr><td><code>name</code></td><td>string</td><td><span class="tag req">必填</span></td><td>显示名称，如 "示例动漫"</td></tr>
+  <tr><td><code>group</code></td><td>string</td><td><span class="tag req">必填</span></td><td>分组，如 "动漫"</td></tr>
+  <tr><td><code>baseUrl</code></td><td>string</td><td><span class="tag req">必填</span></td><td>站点根地址，如 <code>https://www.example.com/</code>。所有相对 URL、<code>{baseUrl}</code> 模板都基于它</td></tr>
+  <tr><td><code>version</code></td><td>string</td><td><span class="tag req">必填</span></td><td>源版本号，修改配置后请递增</td></tr>
+  <tr><td><code>author</code></td><td>string</td><td><span class="tag opt">可选</span></td><td>源作者。导入配置文件时若源未自带，会继承文件级 author；应用内编辑页"基本"Tab 可填写，导出时随源携带</td></tr>
+  <tr><td><code>update_time</code></td><td>string</td><td><span class="tag opt">可选</span></td><td>源级更新日期（YYYY-MM-DD）。导入时同样继承文件级值；应用内编辑保存时自动更新为当天</td></tr>
+  <tr><td><code>enabled</code></td><td>boolean</td><td><span class="tag opt">可选</span></td><td>是否启用，默认 <code>true</code></td></tr>
+  <tr><td><code>priority</code></td><td>number</td><td><span class="tag opt">可选</span></td><td>优先级，数值越小越靠前</td></tr>
+  <tr><td><code>description</code></td><td>string</td><td><span class="tag opt">可选</span></td><td>源介绍（可注明播放限制，如 "播放需账号登录"）</td></tr>
+  <tr><td><code>defaultSource</code></td><td>boolean</td><td><span class="tag opt">可选</span></td><td>是否默认源</td></tr>
+  <tr><td><code>login</code></td><td>object</td><td><span class="tag opt">可选</span></td><td>登录配置，见下节</td></tr>
+  <tr><td><code>parserConfig</code></td><td>object</td><td><span class="tag req">必填</span></td><td>解析配置，本文档的主角</td></tr>
+</table>
+
+<h2 id="login">登录配置 login</h2>
+<p>部分站点的播放接口需要登录凭证（JSON API 登录）。配置后，源列表<strong>长按源卡片</strong>会出现"账号登录"入口；登录成功取得的 token 会自动附加到该源的<strong>所有 API 请求</strong>上。</p>
+<pre><code>"login": {
+  "type": "api",                       // 固定 "api"
+  "loginUrl": "/api/auth/login",       // 登录接口（相对 baseUrl 或绝对）
+  "usernameField": "username",         // 请求体用户名字段名，默认 username
+  "passwordField": "password",         // 请求体密码字段名，默认 password
+  "extraBody": { },                    // 额外固定请求体字段（可选）
+  "tokenPath": "data.token",           // token 在登录响应中的 JSON 路径，默认 data.token
+  "authHeaderName": "Authorization",   // 携带凭证的请求头名，默认 Authorization
+  "authValueTemplate": "{token}"       // 请求头值模板，默认 {token}
+}</code></pre>
+<div class="note"><code>authValueTemplate</code> 支持前缀写法，例如站点要求 <code>Bearer xxx</code> 时填 <code>"Bearer {token}"</code>。</div>
+
+<h2 id="parser-overview">parserConfig 总览</h2>
+<pre><code>"parserConfig": {
+  "sourceType": "html",               // "html" | "json"，缺省 html
+  "requestHeaders": { },              // 该源所有请求附加的自定义请求头（JSON 源常用）
+  "search":   { "videos": VideoConfig },
+  "homepage": { "banner": VideoConfig, "category": CategoryConfig },
+  "detail":   DetailConfig,
+  "videoUrl": VideoUrlConfig
+}</code></pre>
+<p>其中 <code>search</code>、<code>homepage</code>、<code>detail</code>、<code>videoUrl</code> 分别对应应用内的四个功能环节：搜索 → 首页浏览 → 详情页 → 播放。</p>
+
+<h2 id="selector-syntax">选择器语法（HTML 模式）</h2>
+<p>HTML 模式的核心语法：<strong>CSS 选择器 + <code>@</code> 属性</strong>。</p>
+<table>
+  <tr><th>写法</th><th>含义</th><th>示例</th></tr>
+  <tr><td><code>选择器</code></td><td>取元素的<strong>文本内容</strong>（自动 trim、反转义 HTML 实体）</td><td><code>.module-card-item-title</code></td></tr>
+  <tr><td><code>选择器@属性</code></td><td>取元素的指定<strong>属性值</strong></td><td><code>a@href</code>、<code>img@data-original</code></td></tr>
+  <tr><td><code>@属性</code></td><td>选择器为空时取<strong>条目元素自身</strong>的属性（条目本身即 <code>&lt;a&gt;</code> 时常用）</td><td><code>@href</code></td></tr>
+</table>
+<div class="note">懒加载图片通常不在 <code>src</code> 而在 <code>data-original</code> / <code>data-src</code> 等自定义属性里，F12 看清楚再填。</div>
+<p>此外每个字段都可以用<strong>复杂形式</strong>附加后处理（详见<a href="#postprocess">字段后处理</a>）：</p>
+<pre><code>"title": {
+  "selector": ".module-card-item-title",
+  "postProcess": { "type": "string", "stringProcess": { "type": "replace", "search": "免费", "replace": "" } }
+}</code></pre>
+
+<h3>VideoConfig：列表解析的通用结构</h3>
+<p>搜索结果、横幅、分类视频、推荐列表都是同一种结构：</p>
+<table>
+  <tr><th>字段</th><th>模式</th><th>说明</th></tr>
+  <tr><td><code>urlTemplate</code></td><td>两者</td><td>请求地址模板。HTML：相对/绝对页面地址，支持 <code>{keyword}</code>（自动 URL 编码）、<code>{page}</code> 占位符；JSON 模式下搜索必填，首页横幅等直接请求 <code>url</code> 的场景可不填</td></tr>
+  <tr><td><code>listSelector</code></td><td>HTML</td><td>列表条目的 CSS 选择器，如 <code>div.module-card-item</code>，命中几个元素就有几条结果</td></tr>
+  <tr><td><code>listSelector</code></td><td>JSON</td><td>列表在响应中的 JSON 路径，如 <code>data.list</code>；以 <code>regex:</code> 开头时改为"正则捕获 JSON 数组"（用于 RSC/flight 等夹在 HTML 里的数据）</td></tr>
+  <tr><td><code>containerSelector</code></td><td>HTML</td><td>可选。先定位列表容器，再在容器内用 <code>listSelector</code> 找条目（"更多"分页页等整页文档用）</td></tr>
+  <tr><td><code>urlNeedBaseUrl</code></td><td>两者</td><td>结果 URL 是相对路径时填 <code>true</code>，引擎自动拼接 <code>baseUrl</code></td></tr>
+  <tr><td><code>enabledHttps</code></td><td>两者</td><td><code>true</code> 时把取到的 <code>http://</code> 地址升级为 <code>https://</code></td></tr>
+  <tr><td><code>itemSelectors</code></td><td>两者</td><td>字段选择器（HTML）或字段模板（JSON），见下</td></tr>
+</table>
+<p><code>itemSelectors</code> 支持的四个字段：</p>
+<table>
+  <tr><th>字段</th><th>HTML 填法</th><th>JSON 填法</th></tr>
+  <tr><td><code>url</code></td><td><code>a@href</code>（详情页地址，必填）</td><td><code>"{baseUrl}/api/videos/{video_id}"</code></td></tr>
+  <tr><td><code>imgUrl</code></td><td><code>img@data-original</code></td><td><code>"{cover_url}"</code></td></tr>
+  <tr><td><code>title</code></td><td><code>.module-card-item-title</code></td><td><code>"{title}"</code></td></tr>
+  <tr><td><code>episode</code></td><td><code>.module-item-note</code>（集数/备注角标）</td><td><code>"{remarks}"</code></td></tr>
+</table>
+
+<h2 id="template-syntax">路径与模板（JSON 模式）</h2>
+<h3>JSON 路径</h3>
+<p>用点分隔逐层取值，数组元素用数字下标：</p>
+<pre><code>data.list          → resp.data.list
+data.list.0.videos → resp.data.list[0].videos（横幅等嵌套场景）
+play_from          → 顶层数组字段</code></pre>
+<h3>字段模板 <code>{ }</code></h3>
+<ul>
+  <li><code>{baseUrl}</code>：固定替换为源根地址；</li>
+  <li>其余 <code>{xxx}</code>：按<strong>点分路径</strong>从当前上下文对象取值，如 <code>{video_id}</code>、<code>{actor.name}</code>；</li>
+  <li>取到数组时以 <code>/</code> 连接（如多分类标签 <code>{categories}</code>）；</li>
+  <li>取不到值时替换为空字符串。</li>
+</ul>
+<p>模板可以任意混排文字：<code>"{baseUrl}/api/video/{id}/episodes?route={route}&page=1"</code>。</p>
+<div class="note">不同位置能引用的上下文不同：搜索/列表 = 条目自身字段；选集 = 详情字段 + 路线字段 + 剧集字段 + <code>{routeIndex}</code>（路线序号，从 0 开始）。详见<a href="#episodes">选集</a>一节。</div>
+<h3>JSON 模式的请求行为</h3>
+<ul>
+  <li>相对地址自动拼 <code>baseUrl</code>；</li>
+  <li>自动附加 <code>parserConfig.requestHeaders</code> 与登录 token；</li>
+  <li>响应是对象且 <code>code</code> 存在且非 0 时，抛出 <code>msg</code> 作为错误信息（兼容常见业务码约定）。</li>
+</ul>
+
+<h2 id="search">搜索 search</h2>
+<pre><code>"search": {
+  "videos": {
+    "urlTemplate": "/index.php/vod/search/wd/{keyword}.html",   // {keyword} 自动 URL 编码，支持 {page}
+    "listSelector": "div.module-card-item",
+    "urlNeedBaseUrl": true,
+    "enabledHttps": true,
+    "itemSelectors": { "url": "a@href", "imgUrl": "img@data-original", "title": ".module-card-item-title", "episode": ".module-item-note" }
+  }
+}</code></pre>
+<p>JSON 模式示例：</p>
+<pre><code>"urlTemplate": "/api/videos/search?q={keyword}&page={page}&page_size=20",
+"listSelector": "data.list",
+"itemSelectors": {
+  "title": "{title}",
+  "url": "{baseUrl}/api/videos/{video_id}",
+  "imgUrl": "{cover_url}",
+  "episode": "{remarks}"
+}</code></pre>
+<h4>可选扩展字段</h4>
+<p>itemSelectors 支持以下可选字段键，提取结果会挂在 VideoInfo 上（均为可选，源里有什么配什么，未配置即为空）：</p>
+<table>
+  <tr><th>字段键</th><th>含义</th><th>示例值</th></tr>
+  <tr><td><code>playCount</code></td><td>播放量</td><td>1854 / 1.2万</td></tr>
+  <tr><td><code>year</code></td><td>播出年份</td><td>2012</td></tr>
+  <tr><td><code>month</code></td><td>播出月份</td><td>04 / 四月</td></tr>
+  <tr><td><code>director</code></td><td>导演</td><td>武本康弘,木上益治</td></tr>
+  <tr><td><code>actors</code></td><td>演员</td><td>中村悠一,佐藤聪美</td></tr>
+  <tr><td><code>tags</code></td><td>标签/类型</td><td>悬疑,校园,日常</td></tr>
+</table>
+<div class="note">每个字段都可以用「简单选择器字符串」或「<code>{ selector, postProcess }</code> 复杂配置」两种形态；配合 <code>nth-child(n)</code>/<code>nth-of-type(n)</code> 伪类可取同容器第 n 个元素，配合 <code>:contains(文本)</code> 伪类可按文本内容筛选元素（如 <code>.slide-info.partition:contains(导演)</code> 取行首带「导演」的行——条目行数不固定时比按序号取更稳），配合 postProcess（regex/replace 等表单类型）可清洗文本（如去掉「导演 :」前缀）。多值字段建议保留原始分隔符（如英文逗号），由 UI 自行切分展示。应用内编辑器中这组字段收在「更多字段」开关下，配置任一字段即展开；后处理请优先使用表单类型（字符串替换/正则提取等），pipeline 等高级形态仍可通过「JSON(高级)」编辑。</div>
+
+<h3>搜索验证码 captcha（可选）</h3>
+<p>部分站点（MacCMS dsn2 模板常见）搜索会返回验证码页。配置后引擎自动走「获取验证码图片 → 搜索页弹窗输入 → 提交校验 → 同会话重放搜索」流程，全程共享 Cookie 会话：</p>
+<pre><code>"search": {
+  "videos": { "..." : "同上" },
+  "captcha": {
+    "detectSelector": "img.ds-verify-img",        // 命中该选择器说明响应是验证码页
+    "imageUrlSelector": "img.ds-verify-img@src",  // 验证码图片选择器（selector@attr）；留空且判定元素本身是 img 时自动回退为 detectSelector+@src
+    "imageNeedBaseUrl": true,                     // 图片地址是否拼 baseUrl，默认 true
+    "imageCacheBustParam": "r",                   // 获取图片时附加 ?r=随机数 防缓存（可选）
+    "verifyUrlTemplate": "/index.php/ajax/verify_check?type=search&verify={code}",  // {code}=用户输入
+    "successContains": "\"code\":1"               // 提交响应包含该子串视为成功（可选）
+  }
+}</code></pre>
+<div class="note">验证码弹窗只在搜索页出现；未配置或校验连续失败 3 次时按普通搜索失败处理。前提是站点验证流程为「图片 + 提交校验 + 会话 Cookie 生效」，带滑动/点选等交互验证的站不适用。</div>
+
+<h2 id="homepage">首页 homepage</h2>
+<h3>横幅 banner</h3>
+<p>结构与搜索的 <code>videos</code> 完全相同（VideoConfig）：</p>
+<pre><code>"banner": {
+  "listSelector": ".sm-swiper .swiper-slide",
+  "urlNeedBaseUrl": true,
+  "enabledHttps": true,
+  "itemSelectors": { "url": "a@href", "imgUrl": "img@src", "title": ".title", "episode": ".ins p" }
+}</code></pre>
+<p>JSON 模式下 <code>urlTemplate</code> 支持 <code>{today}</code> 占位符（当前星期，用于"今日更新"类接口），<code>listSelector</code> 填 JSON 路径如 <code>data.list.0.videos</code>。</p>
+
+<h3>分类 category</h3>
+<p><strong>HTML 模式</strong>——从首页 DOM 中同时解析多个分类板块：</p>
+<pre><code>"category": {
+  "title": "h2.module-title",                    // 单个板块标题的选择器
+  "titles": "div.module > div.module-heading",   // 所有板块标题的选择器（与 videoLists 数量对应）
+  "moreUrl": "a.module-heading-more@href",       // 板块"更多"链接
+  "moreUrlNeedBaseUrl": true,
+  "videoLists": "div.module > div.module-main",  // 所有板块列表容器的选择器
+  "videos": {                                    // 每个板块内的条目解析（VideoConfig）
+    "listSelector": "a.module-poster-item",
+    "containerSelector": "div.module-items",
+    "urlNeedBaseUrl": true,
+    "enabledHttps": true,
+    "itemSelectors": { "url": "@href", "imgUrl": "img@data-original", "title": ".module-poster-item-title", "episode": ".module-item-note" }
+  }
+}</code></pre>
+<div class="note"><code>titles</code> 与 <code>videoLists</code> 命中的元素按顺序一一配对成板块，选择器要保证两者数量一致。</div>
+<p><strong>JSON 模式</strong>——不用解析页面，直接声明 <code>cards</code> 数组，每个卡片独立请求一个接口：</p>
+<pre><code>"category": {
+  "title": "", "titles": "", "moreUrl": "", "moreUrlNeedBaseUrl": false, "videoLists": "",   // HTML 字段留空即可
+  "videos": { "urlTemplate": "", "listSelector": "data.list", "urlNeedBaseUrl": false, "enabledHttps": true,
+              "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/videos/{video_id}", "imgUrl": "{cover_url}", "episode": "{remarks}" } },
+  "cards": [
+    {
+      "title": "周榜",                          // 卡片标题
+      "url": "/api/ranks/1/videos",            // 卡片数据地址（JSON=接口，HTML=页面）
+      "moreUrl": "/api/ranks/1/videos",        // "更多"地址；支持 {page} 占位符（HTML/JSON 均可，分页从 1 开始）
+      "listPath": "data.list",                 // JSON 模式：列表 JSON 路径
+      "listSelector": ".anime-card",           // HTML 模式：条目 CSS 选择器
+      "maxItems": 12,                          // 可选：显示条数上限（解析前截断，减少主页耗时；完整列表走"更多"），应用内卡片编辑器"显示条数上限"对应此字段
+      "urlNeedBaseUrl": false,
+      "enabledHttps": true,
+      "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/videos/{video_id}", "imgUrl": "{cover_url}", "episode": "{remarks}" }
+    }
+  ]
+}</code></pre>
+<div class="note">HTML 模式的"更多"分页页同样用 <code>videos</code>（含 <code>containerSelector</code>）解析整页文档；卡片 <code>moreUrl</code> 支持 <code>{page}</code> 占位符（如 <code>/show/2--------{page}---/</code>），未使用占位符时沿用旧行为（页码直接拼在地址末尾）。卡片请求失败或解析为空时引擎自动重试一次（间隔 300ms），避免站点偶发限流导致卡片空白。</div>
+
+<h2 id="detail">详情 detail</h2>
+<p>进入详情页后，引擎请求 <code>url</code>（列表阶段取到的地址）并解析以下字段。</p>
+<p><strong>HTML 模式</strong>——全部是选择器：</p>
+<pre><code>"detail": {
+  "titleSelector": ".module-info-heading h1",
+  "descSelector": ".module-info-introduction-content p",
+  "coverSelector": ".module-info-poster img@data-original",
+  "categorySelector": ".module-info-tag a",        // 可选：分类
+  "directorSelector": ".module-info-items div a",  // 可选：导演
+  "updateTimeSelector": ".module-info-item-content", // 可选：更新时间
+  "protagonistSelector": ".module-info-items a",   // 可选：主演
+  "extra": { ... },          // 可选：扩展字段（见下）
+  "episodes": { ... },      // 见下一节
+  "recommends": { ... }     // 见推荐一节
+}</code></pre>
+<p><strong>JSON 模式</strong>——<code>link</code> 是接口地址，字段全部改填 <code>{ }</code> 模板（上下文 = 详情接口响应对象）：</p>
+<pre><code>"detail": {
+  "dataPath": "0",               // 可选：详情数据在响应中的 JSON 路径，默认 data（支持数组索引）
+  "titleSelector": "{title}",
+  "descSelector": "{description}",
+  "coverSelector": "{cover_url}",
+  "categorySelector": "{categories}",
+  "directorSelector": "{director}",
+  "updateTimeSelector": "{publish_date}",
+  "protagonistSelector": "{actor}",
+  "coverPostProcess": { ... },   // 可选：封面地址后处理（ProcessConfig），如改写为图片代理地址
+  "extra": { ... },              // 可选：扩展字段（见下）
+  "episodes": { ... },
+  "recommends": { ... }
+}</code></pre>
+<p>默认从响应的 <code>data</code> 字段取详情对象；接口直接返回数组或对象本身时用 <code>dataPath</code> 指定（支持点分路径与数组索引，如 PostgREST 数组响应填 <code>0</code>，根对象本身填空串之外的取值均可按需配置）。</p>
+<h3>详情扩展字段 extra（可选）</h3>
+<p><code>extra</code> 的键与「可选扩展字段」一节完全相同（<code>playCount / year / month / director / actors / tags</code>），用于补充/丰富详情信息；HTML 模式值为 CSS 选择器，JSON 模式值为 <code>{ }</code> 模板，同样支持 <code>{ selector, postProcess }</code> 复杂配置。与 <code>directorSelector</code> 等旧字段重叠时以 <code>extra</code> 为准（后写入）：</p>
+<pre><code>"extra": {
+  "director": { "selector": ".slide-info.hide.partition:contains(导演)",
+                "postProcess": { "type": "string", "stringProcess": { "type": "replace", "search": "^(导演|演员|类型)\\s*:\\s*|\\s*[,，]\\s*$", "replace": "", "flags": "g" } } },
+  "actors": { "selector": ".slide-info.hide.partition:contains(演员)", "postProcess": { "...": "同上" } },
+  "tags":   { "selector": ".slide-info.hide.partition:contains(类型)", "postProcess": { "...": "同上" } },
+  "year":   { "selector": ".slide-info-remarks:nth-of-type(2)",
+              "postProcess": { "type": "string", "stringProcess": { "type": "regex", "pattern": "\\d{4}" } } },
+  "month":  { "selector": ".slide-info-remarks:nth-of-type(3)",
+              "postProcess": { "type": "string", "stringProcess": { "type": "regex", "pattern": "[一二三四五六七八九十]{1,3}月" } } }
+}</code></pre>
+<div class="note">导演/演员/类型行用 <code>:contains(标签文字)</code> 按行首标签选行，条目缺行（如电影条目没有演员行）时对应字段为空、不会错位到别的行；年月等固定次序的行仍可用 <code>nth-of-type(n)</code>。应用内编辑器中该组字段收在详情页签的「更多字段」开关下，配置任一字段即展开，全部清空后开关关闭并移除 <code>extra</code> 节点。提取结果挂在 VideoDetailInfo 上，与列表阶段的同名扩展字段结构一致。</div>
+
+<h2 id="episodes">选集 episodes</h2>
+<h3>HTML 模式：单路线 / 多路线</h3>
+<pre><code>"episodes": {
+  // —— 多路线（多播放源）——
+  "routeTitlesSelector": "#y-playList .module-tab-item > span",      // 路线标题（如"播放1""备用2"）
+  "routeContainersSelector": "#panel1 .module-play-list-content",    // 每条路线的列表容器
+  // —— 单路线 ——
+  "containerSelector": ".module-play-list-content",                  // 列表容器（与上面二选一）
+  // —— 公共 ——
+  "itemSelector": ".module-play-list-link",                          // 单集条目
+  "itemSelectors": {
+    "url": "@href",                                                  // 播放页地址
+    "title": "span"                                                  // 集名，如"第01集"
+  }
+}</code></pre>
+<div class="note">单路线用 <code>containerSelector + itemSelector</code>；多路线用 <code>routeTitlesSelector + routeContainersSelector + itemSelector</code>，标题与容器按顺序配对。</div>
+<h3>JSON 模式：路线 + 选集接口</h3>
+<pre><code>"episodes": {
+  "jsonRoutesPath": "play_from",                 // 详情响应中的路线数组路径，每项描述一条播放路线
+  "jsonRouteTitleTemplate": "{title}",           // 路线标题模板（上下文 = 详情字段 + 路线项字段，路线优先）
+  "jsonSectionsUrlTemplate": "{baseUrl}/api/video/{id}/episodes?route={route}&page=1&page_size=100",
+                                                // 每条路线独立请求选集接口；不填则视为剧集内嵌在路线对象中
+  "jsonListPath": "data.list",                   // 剧集列表在选集响应中的 JSON 路径，默认 data.list
+  "itemSelector": "",
+  "itemSelectors": {
+    "title": "{title}",
+    "url": "{baseUrl}/api/v2/sections/{id}/play-url"   // 该集的"播放地址"（通常是解析接口，交给 videoUrl 换取直链）
+  }
+}</code></pre>
+<p>剧集字段模板的上下文 = <strong>详情字段 + 路线字段 + 剧集字段</strong>（后者覆盖前者），另有 <code>{routeIndex}</code> 可用（路线序号，从 0 开始）——当不同路线的解析接口不同时可以用它做判断类后处理。</p>
+<p>不配置 <code>jsonRoutesPath</code> 时进入<strong>单路线模式</strong>：详情数据自身作为唯一路线，<code>jsonListPath</code> 相对详情对象取剧集数组，路线标题模板上下文 = 详情字段。适用于剧集列表直接内嵌在详情响应里的接口（如 PostgREST 关联嵌入 <code>select=*,episodes(...)</code>），只需一次请求同时拿详情和选集。</p>
+
+<h2 id="recommends">推荐 recommends</h2>
+<p>结构即 VideoConfig：</p>
+<pre><code>// HTML 模式
+"recommends": {
+  "listSelector": "div.module-poster-items-base a.module-poster-item",
+  "urlNeedBaseUrl": true,
+  "enabledHttps": true,
+  "itemSelectors": { "url": "@href", "imgUrl": "img@data-original", "title": ".module-poster-item-title", "episode": ".module-item-note" }
+}
+// JSON 模式：listSelector 填 JSON 路径，另加 jsonUrlTemplate 指定推荐接口（上下文 = 详情字段）
+"recommends": {
+  "listSelector": "data.list",
+  "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/videos/{video_id}", "imgUrl": "{cover_url}", "episode": "{remarks}" },
+  "urlNeedBaseUrl": false,
+  "enabledHttps": true,
+  "jsonUrlTemplate": "{baseUrl}/api/videos/{id}/recommendations?limit=6"
+}</code></pre>
+
+<h2 id="videourl">播放地址 videoUrl</h2>
+<p>选集拿到的 <code>url</code> 往往只是<strong>播放页/解析接口</strong>，<code>videoUrl</code> 负责把它换成真正可播放的直链。按 <code>pattern</code> 分四种：</p>
+<table>
+  <tr><th>pattern</th><th>行为</th><th>关键字段</th></tr>
+  <tr>
+    <td><code>"regex"</code></td>
+    <td>请求 <code>url</code> 拿到原始文本，用正则提取（取<strong>捕获组 1</strong>）</td>
+    <td><code>urlSelector</code> = 正则表达式（此模式下含义是正则）</td>
+  </tr>
+  <tr>
+    <td>选择器模式<br>（不填 pattern）</td>
+    <td>请求 <code>url</code> 拿到 HTML，用选择器提取属性</td>
+    <td><code>urlSelector</code> = <code>选择器@属性</code></td>
+  </tr>
+  <tr>
+    <td><code>"json"</code></td>
+    <td>请求 <code>url</code>（JSON 接口），按路径取值</td>
+    <td><code>valuePath</code> = 播放地址 JSON 路径，默认 <code>data.url</code></td>
+  </tr>
+  <tr>
+    <td><code>"link"</code></td>
+    <td><code>url</code> 本身就是播放页地址，直接透传（通常配合 <code>iframeSelector</code> 交给 WebView 解析）</td>
+    <td>—</td>
+  </tr>
+</table>
+<p>regex 模式示例（模板站常见：从播放页内嵌 JSON 中抠出直链）：</p>
+<pre><code>"videoUrl": {
+  "pattern": "regex",
+  "urlSelector": "\"url\":\"([^\"]+)\",\"url_next\"",
+  "postProcess": "replaceAll('\\\\/', '/')"     // 旧版字符串后处理，处理 \/ 转义
+}</code></pre>
+<p>json 模式示例（接口站）：</p>
+<pre><code>"videoUrl": { "pattern": "json", "valuePath": "data.url" }</code></pre>
+<p>三种请求型 pattern 均支持旧版字符串 <code>postProcess</code>，共四种（可按顺序组合，用 <code>;</code> 分隔）：<code>"substringBetween('start','end')"</code>、<code>"replaceAll('old','new')"</code>、<code>"base64Decode()"</code>（Base64 解码，UTF-8）、<code>"decodeUri()"</code>（URL 解码）。典型组合——MacCMS 播放地址 <code>player_aaaa</code> 的 <code>encrypt=2</code> 加密：<code>"base64Decode();decodeUri()"</code>。</p>
+<p><code>iframeSelector</code>（可选）：真实地址需要执行页面 JS 才能拿到时，填一段 JS，引擎会改用内置 WebView 加载播放页并注入执行，详见<a href="#webview-js">WebView JS 解析</a>。注意其生效前提是 pattern 解析出的地址是一个<strong>网页</strong>而非直链：JSON 源请配合 <code>"pattern": "link"</code>；HTML 源请让 <code>urlSelector</code> 提取播放器页地址（如 <code>iframe@src</code>）。</p>
+
+<h2 id="postprocess">字段后处理</h2>
+<p>任何 <code>itemSelectors</code> 字段、详情封面（<code>coverPostProcess</code>）、HTML 文本/属性选择器都可以挂 <code>postProcess</code>，类型是 <code>ProcessConfig</code>：</p>
+<pre><code>"imgUrl": {
+  "selector": "img@src",
+  "postProcess": {
+    "type": "pipeline",                       // 串多步
+    "steps": [
+      { "type": "string", "stringProcess": { "type": "replace", "search": "/thumb/", "replace": "/" } },
+      { "type": "condition", "condition": "result", "trueValue": "有图", "falseValue": "无图" },
+      { "type": "transform", "transform": { "map": { "1": "国语", "2": "日语" } } }
+    ]
+  }
+}</code></pre>
+<p>六种 <code>type</code>：</p>
+<table>
+  <tr><th>type</th><th>用途</th><th>关键字段</th></tr>
+  <tr><td><code>"string"</code></td><td>字符串处理（最常用），具体操作见下表</td><td><code>stringProcess</code></td></tr>
+  <tr><td><code>"condition"</code></td><td>按条件替换整值</td><td><code>condition</code>（表达式，<code>result</code> 代表原值）、<code>trueValue</code>、<code>falseValue</code></td></tr>
+  <tr><td><code>"transform"</code></td><td>映射 / 模板</td><td><code>transform.map</code>（值→值映射表）或 <code>transform.template</code>（<code>${input}</code> 占位）</td></tr>
+  <tr><td><code>"script"</code></td><td>受限沙箱脚本</td><td><code>script</code>（JS 片段，<code>result</code>=原值，<code>context</code>=自定义上下文，可用 <code>Math</code> 与 <code>utils.string/number/array/condition</code> 工具），<code>return</code> 返回结果</td></tr>
+  <tr><td><code>"expression"</code></td><td>简单表达式求值</td><td><code>expression</code>，如 <code>"result * 2"</code>（仅算术）</td></tr>
+  <tr><td><code>"pipeline"</code></td><td>串联多个步骤</td><td><code>steps</code>: ProcessConfig 数组，依次执行</td></tr>
+</table>
+<p><code>stringProcess</code>（StringProcessConfig）四种操作：</p>
+<table>
+  <tr><th>type</th><th>关键字段</th><th>说明</th></tr>
+  <tr><td><code>"regex"</code></td><td><code>pattern</code>、<code>flags</code>（默认 g）、<code>group</code>（捕获组号）</td><td>正则提取，返回指定捕获组（默认第 0 个匹配）</td></tr>
+  <tr><td><code>"replace"</code></td><td><code>search</code>（正则）、<code>flags</code>、<code>replace</code></td><td>正则替换全部命中</td></tr>
+  <tr><td><code>"substring"</code></td><td><code>start</code>、<code>end</code>（数字下标或字符串标记）</td><td>取子串；填字符串时按"标记之后 / 标记之前"定位</td></tr>
+  <tr><td><code>"split"</code></td><td><code>delimiter</code>、<code>index</code></td><td>分割后取第 index 段（默认第 0 段）</td></tr>
+</table>
+<div class="note">后处理出错时不会中断解析，而是<strong>返回原值</strong>，可放心使用。</div>
+
+<h2 id="webview-js">WebView JS 解析（iframeSelector）</h2>
+<p>当播放直链必须执行站点 JS 才能获得（加密参数、动态请求、防爬校验等），给 <code>videoUrl</code> 配置 <code>iframeSelector</code>：</p>
+<pre><code>"videoUrl": {
+  "pattern": "link",                    // 或其他 pattern：先解析出"播放页地址"，再交给 WebView
+  "iframeSelector": "(function(){ ... return 直链或 'ERR_错误码'; })()"
+}</code></pre>
+<p>执行流程：</p>
+<ol>
+  <li>引擎先按 <code>pattern</code> 解析出一个播放页地址（<code>pattern: "link"</code> 时直接用选集 <code>url</code>）；</li>
+  <li>内置 WebView 加载该页面，注入执行 <code>iframeSelector</code> 这段 JS（立即执行表达式）；</li>
+  <li>JS 返回值即播放直链，交由播放器播放。</li>
+</ol>
+<p>约定：</p>
+<ul>
+  <li>JS 返回 <code>http(s)://</code> 开头的字符串视为成功；返回 <code>ERR_</code> 前缀的字符串视为失败并提示；</li>
+  <li>JS 中<strong>严禁出现 <code>_|_</code> 子串</strong>（它被用作地址与 JS 的内部分隔符）；</li>
+  <li>JS 里可以用 <code>XMLHttpRequest</code> 同步请求站点接口、读取 <code>document</code> / <code>location</code>，等于在站点自己的页面环境里写"半自动解析脚本"。</li>
+</ul>
+<p>复杂示例可参考仓库规则列表中使用 WebView JS 解析的现成源：页面加载后从内嵌数据中找剧集 ID，计算校验头，请求解析接口取直链。</p>
+<div class="warn">对带真实点击校验（isTrusted）或风控较强的站点，纯 JS 可能无法稳定通过。应用对此类源有兜底策略：自动尝试失败后会弹出 WebView 让用户手动点击辅助播放，配置无需额外处理。</div>
+
+<h2 id="tutorial">写源实战教程</h2>
+<p>以给一个模板站写 HTML 源为例，整体流程约 30-60 分钟：</p>
+<h3>第 1 步：侦察站点（10 分钟）</h3>
+<ol>
+  <li>电脑浏览器打开目标站，F12 打开开发者工具；</li>
+  <li>搜一个关键词，看搜索结果页 URL 规律（如 <code>/index.php/vod/search/wd/关键字.html</code>）；</li>
+  <li>在 Elements 面板用选择器箭头点一个结果卡片，记下它的 class（如 <code>div.module-card-item</code>）；</li>
+  <li>同法确认：封面 img 的真实属性（src 还是 data-original）、标题、集数角标、详情链接；</li>
+  <li>打开详情页：标题/简介/封面/选集（单路线还是多路线）/推荐的选择器；</li>
+  <li>打开播放页：Network 面板找真实视频直链（m3u8/mp4）——看它是直接写在 HTML 里、内嵌 JSON 里，还是接口返回的。这决定 <code>videoUrl.pattern</code> 怎么填。</li>
+</ol>
+<div class="note">苹果 CMS（MacCMS）模板站结构高度一致，本仓库的模板站 HTML 源几乎可以直接换 <code>baseUrl</code> 复用，改前先对比一下 class 名。</div>
+<h3>第 2 步：搭骨架（5 分钟）</h3>
+<p>两种方式任选：</p>
+<ul>
+  <li>在电脑上复制一个结构最接近的现有源文件，替换 <code>key/name/baseUrl</code> 等基础信息；</li>
+  <li>或直接在应用内"添加新数据源"新建（每个输入框的含义见<a href="#editor">应用内编辑器对照</a>）。</li>
+</ul>
+<h3>第 3 步：逐块填写（20 分钟）</h3>
+<p>按 <strong>搜索 → 详情 → 选集 → videoUrl → 首页</strong> 的顺序填（这是排查问题的自然顺序：先能搜到，再能进详情，再能播放，最后美化首页）。在应用内编辑时每个输入框都有提示文案，随时可切换"源模式"查看 HTML/JSON 两种填法示例。</p>
+<h3>第 4 步：真机验证（10 分钟）</h3>
+<ol>
+  <li>应用内编辑：点<strong>保存</strong>即生效；JSON 文件方式：把文件放到手机或直接用 raw 链接；</li>
+  <li>JSON 文件方式：AnimeZ → 我的 → 设置 → 视频源 → 更多菜单 → 导入数据源 → 选择<strong>覆盖导入</strong>；</li>
+  <li>依次验证：搜索出结果 → 首页显示 → 点进详情 → 选集完整 → 播放成功 → 推荐显示。</li>
+</ol>
+<div class="warn">修改配置后<strong>必须重新覆盖导入</strong>才会生效，这是最常见的"改了没反应"原因。</div>
+
+<h2 id="editor">应用内编辑器对照</h2>
+<p>除了在电脑上写 JSON 再导入，你也可以<strong>完全在应用内</strong>填写源：编辑页每个输入框都有提示文案，本节把每个界面对应的配置字段和填写方法整理成对照表，照着填即可。</p>
+<h3>入口与页面结构</h3>
+<table>
+  <tr><th>操作</th><th>位置</th></tr>
+  <tr><td>新建源</td><td>视频源页（我的 → 设置 → 视频源）→ 右上角"更多"菜单（<code>⋮</code> 九宫格图标）→ <strong>添加新数据源</strong></td></tr>
+  <tr><td>编辑已有源</td><td>视频源页 → <strong>点击</strong>源卡片</td></tr>
+  <tr><td>长按源卡片</td><td>弹出菜单：<strong>账号登录/账号管理</strong>（配置了 login 的源才显示）、多选、复制视频源、导出视频源</td></tr>
+  <tr><td>更多菜单其他项</td><td>本地导入 / 网络导入 / 粘贴导入 / 二维码导入 / 批量管理 / 导出全部 / 重置为默认配置</td></tr>
+</table>
+<p>编辑页顶部工具栏：</p>
+<ul>
+  <li><strong>启用</strong>（对应 <code>enabled</code>）、<strong>首页</strong>（对应 <code>defaultSource</code>，勾选后该源成为应用启动时的首页数据源）与<strong>源模式</strong>（HTML / JSON，对应 <code>sourceType</code>）。切换源模式后，下面各 Tab 输入框的标题和提示文案会随之切换（CSS 选择器 ↔ JSON 模板），不确定怎么填时先切换模式看提示；</li>
+  <li><strong>保存</strong>：至少填写 <code>Key</code> 和<strong>名称</strong>才能保存；<strong>保存后立即生效，无需重新导入</strong>；</li>
+  <li>有未保存修改时返回会弹出"确认退出"提醒。</li>
+</ul>
+<div class="note">新建源默认值：<code>version</code>=1.0.0、<code>priority</code>=100、各列表的"拼接基础URL / 启用HTTPS"默认勾选，按需修改即可。保存时会自动把源级 <code>update_time</code> 更新为当天日期，无需手动维护。</div>
+<div class="warn">在应用内手改过的源，若之后<strong>开启"覆盖导入"再导入同名配置文件</strong>，本地修改会被文件内容覆盖。</div>
+
+<h3>"基本"Tab → 源基础字段</h3>
+<table>
+  <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
+  <tr><td>Key(请确保唯一性)</td><td><code>key</code></td><td>唯一标识，建议 <code>key_</code>+拼音/缩写，如 <code>key_myvideo</code></td></tr>
+  <tr><td>基础URL</td><td><code>baseUrl</code></td><td>站点根地址，如 <code>https://www.example.com/</code></td></tr>
+  <tr><td>名称</td><td><code>name</code></td><td>显示名称（同时联动编辑页标题栏）</td></tr>
+  <tr><td>版本</td><td><code>version</code></td><td>数字格式 x.x.x，每次修改递增</td></tr>
+  <tr><td>作者</td><td><code>author</code></td><td>源作者，导出/导入时随源携带</td></tr>
+  <tr><td>描述</td><td><code>description</code></td><td>备注信息，可写播放限制（如"播放需账号登录"）</td></tr>
+  <tr><td>分组</td><td><code>group</code></td><td>如"动漫"</td></tr>
+  <tr><td>优先级</td><td><code>priority</code></td><td>数字输入，越小越靠前</td></tr>
+</table>
+<p><strong>JSON 模式追加</strong>（HTML 模式不显示）：</p>
+<table>
+  <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
+  <tr><td>请求头列表</td><td><code>parserConfig.requestHeaders</code></td><td>每行一个，格式 <code>名称: 值</code>，如 <code>Accept: application/json</code></td></tr>
+  <tr><td>启用账号登录（开关）</td><td><code>login</code></td><td>打开后出现 6 个输入框，见下</td></tr>
+  <tr><td>登录接口地址</td><td><code>login.loginUrl</code></td><td>如 <code>/api/auth/login</code>，相对路径自动拼基础URL</td></tr>
+  <tr><td>用户名字段 / 密码字段</td><td><code>usernameField</code> / <code>passwordField</code></td><td>请求体字段名，留空默认 <code>username</code> / <code>password</code></td></tr>
+  <tr><td>凭证JSON路径</td><td><code>login.tokenPath</code></td><td>默认 <code>data.token</code></td></tr>
+  <tr><td>凭证请求头名 / 凭证请求头模板</td><td><code>authHeaderName</code> / <code>authValueTemplate</code></td><td>默认 <code>Authorization</code> / <code>{token}</code>；需要 Bearer 时填 <code>Bearer {token}</code></td></tr>
+  <tr><td>额外请求体JSON(可选)</td><td><code>login.extraBody</code></td><td>登录请求体的额外固定字段，JSON 文本如 <code>{"device":"web"}</code>；<strong>填错会被静默忽略</strong>，留空清除</td></tr>
+</table>
+
+<h3>"搜索"Tab → search</h3>
+<table>
+  <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
+  <tr><td>拼接基础URL（复选框）</td><td><code>search.videos.urlNeedBaseUrl</code></td><td>结果链接是相对路径时勾选</td></tr>
+  <tr><td>启用HTTPS（复选框）</td><td><code>search.videos.enabledHttps</code></td><td>把取到的 http:// 升级为 https://</td></tr>
+  <tr><td>搜索链接模板</td><td><code>search.videos.urlTemplate</code></td><td>支持 <code>{keyword}</code>（自动URL编码）与 <code>{page}</code>；HTML 如 <code>/search?q={keyword}&page={page}</code>，JSON 如 <code>/api/videos/search?q={keyword}&page={page}</code></td></tr>
+  <tr><td>列表选择器 / 列表JSON路径</td><td><code>search.videos.listSelector</code></td><td>HTML=条目 CSS 选择器；JSON=列表路径如 <code>data.list</code></td></tr>
+  <tr><td>列表容器选择器(可选) <span class="tag">仅HTML</span></td><td><code>search.videos.containerSelector</code></td><td>整页文档中先定位列表容器，再用列表选择器在容器内找条目</td></tr>
+  <tr><td>搜索结果配置 → 番剧名</td><td><code>itemSelectors.title</code></td><td>HTML=选择器，JSON=模板 <code>{title}</code></td></tr>
+  <tr><td>搜索结果配置 → 封面链接</td><td><code>itemSelectors.imgUrl</code></td><td>HTML 如 <code>img@data-original</code>；JSON 如 <code>{cover_url}</code></td></tr>
+  <tr><td>搜索结果配置 → 番剧链接</td><td><code>itemSelectors.url</code></td><td>详情页地址；JSON 如 <code>{baseUrl}/api/videos/{video_id}</code></td></tr>
+  <tr><td>搜索结果配置 → 剧集数</td><td><code>itemSelectors.episode</code></td><td>角标备注；JSON 如 <code>{remarks}</code></td></tr>
+  <tr><td>字段标题行右侧「后处理」复选框 + XX处理方式（下拉）</td><td><code>itemSelectors.&lt;字段&gt;.postProcess</code></td><td>每个 itemSelectors 字段（番剧名/封面链接/番剧链接/剧集数，单集标题/链接同理）标题行右侧带「后处理」勾选框：勾选后展开「XX处理方式」下拉，共 10 种：字符串替换 / 正则提取 / 截取片段 / 分割取段 / 自定义脚本 / 表达式 / 条件取值 / 值映射 / 模板拼接 / JSON(高级)；选择后按类型展开参数输入行（如正则、替换值、脚本代码、每行“旧值=新值”的映射表等），切换类型自动填入该类型初始配置；取消勾选即移除后处理。pipeline 等复杂结构请选「JSON(高级)」直接粘贴 ProcessConfig。<strong>配置错误会被静默忽略</strong>（保留原值），自定义脚本变量为 <code>result</code>/<code>context</code></td></tr>
+  <tr><td>高级字段（搜索页签） <span class="tag">仅HTML</span></td><td><code>search.captcha</code></td><td>「高级字段」开关，开启时预填 dsn2 模板常见默认值并展开 6 项：验证页判定选择器（<code>detectSelector</code>）、验证码图片选择器（<code>imageUrlSelector</code>，selector@attr，留空且判定元素是 img 时自动取其 src）、图片拼接基础URL（<code>imageNeedBaseUrl</code>，开关）、防缓存参数名（<code>imageCacheBustParam</code>，可选）、校验提交地址模板（<code>verifyUrlTemplate</code>，<code>{code}</code>=用户输入）、成功标识子串（<code>successContains</code>，可选）；关闭即移除整节，详见 <a href="#search">搜索 search</a> 一节</td></tr>
+</table>
+
+<h3>"主页"Tab → homepage</h3>
+<table>
+  <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
+  <tr><td>拼接基础URL / 启用HTTPS（复选框）</td><td><code>homepage.banner.urlNeedBaseUrl</code> / <code>homepage.banner.enabledHttps</code></td><td>轮播结果链接为相对路径时勾选拼接；http:// 升级 https://</td></tr>
+  <tr><td>轮播图配置 → 基础URL拼接模板 / 接口地址模板</td><td><code>homepage.banner.urlTemplate</code></td><td>HTML=轮播页地址；JSON=接口地址，支持 <code>{today}</code> 占位符（1=周一..7=周日）</td></tr>
+  <tr><td>列表选择器 / 列表JSON路径</td><td><code>homepage.banner.listSelector</code></td><td>同搜索；JSON 支持 <code>data.list.0.videos</code> 嵌套路径</td></tr>
+  <tr><td>列表容器选择器(可选) <span class="tag">仅HTML</span></td><td><code>homepage.banner.containerSelector</code></td><td>整页文档中先定位轮播容器，再在其中找条目</td></tr>
+  <tr><td>轮播视频配置 / 轮播字段模板</td><td><code>homepage.banner.itemSelectors</code></td><td>字段同"搜索结果配置"5 项</td></tr>
+  <tr><td>分类卡片 → 添加卡片 / 卡片N / 删除</td><td><code>homepage.category.cards[]</code></td><td>两种模式都可用。每张卡片：标题、接口地址(JSON)/页面地址(HTML)、更多页地址(可选，支持 <code>{page}</code>)、列表JSON路径/列表选择器、显示条数上限 <code>maxItems</code>(可选)、拼接基础URL与启用HTTPS开关、字段模板；卡片失败自动重试一次</td></tr>
+  <tr><td>分类配置(同页,未配置卡片时生效) <span class="tag">仅HTML</span></td><td><code>category.title / titles / moreUrl / videoLists</code></td><td>标题选择器、标题列表选择器、更多链接选择器、视频列表容器——从首页 DOM 解析板块</td></tr>
+  <tr><td>更多链接拼接URL / 视频拼接基础URL / 启用HTTPS（复选框）<span class="tag">仅HTML</span></td><td><code>category.moreUrlNeedBaseUrl</code> / <code>category.videos.urlNeedBaseUrl</code> / <code>category.videos.enabledHttps</code></td><td>更多链接与板块视频链接是否拼接基础URL、http 升级 https（"更多"分页页同样生效）</td></tr>
+  <tr><td>板块视频列表选择器 / 板块视频容器选择器(可选) <span class="tag">仅HTML</span></td><td><code>category.videos.listSelector</code> / <code>category.videos.containerSelector</code></td><td>板块内单个条目的选择器；容器选择器用于"更多"页等整页文档（先定位容器再找条目）</td></tr>
+  <tr><td>分类视频配置 <span class="tag">仅HTML</span></td><td><code>category.videos.itemSelectors</code></td><td>板块内条目的字段配置</td></tr>
+</table>
+
+<h3>"详情"Tab → detail</h3>
+<table>
+  <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
+  <tr><td>影片详情 / 详情字段模板（8 项）</td><td><code>detail.titleSelector / descSelector / coverSelector / categorySelector / directorSelector / updateTimeSelector / protagonistSelector / dataPath</code></td><td>HTML=CSS 选择器；JSON=模板（如 <code>{title}</code>、<code>{categories}</code>），后 5 项可选；<code>dataPath</code> 为 JSON 专属（详情数据路径，默认 <code>data</code>）</td></tr>
+  <tr><td>封面后处理JSON(可选) <span class="tag">仅JSON</span></td><td><code>detail.coverPostProcess</code></td><td>ProcessConfig JSON 文本，如把封面地址改写为图片代理</td></tr>
+  <tr><td>更多字段（详情页签）</td><td><code>detail.extra</code></td><td>开关 + 扩展字段组（播放量/年份/月份/导演/演员/标签），字段同"可选扩展字段"一节；HTML=CSS 选择器、JSON=模板，支持后处理；全部清空后自动移除该节点</td></tr>
+  <tr><td>剧集配置（HTML 4 项）</td><td><code>episodes.routeTitlesSelector / routeContainersSelector / containerSelector / itemSelector</code></td><td>多路线标题选择器(可选)、多路线剧集选择器(可选)、单路线剧集选择器(仅单路线时必选)、剧集列表选择器</td></tr>
+  <tr><td>选集配置(JSON)（4 项）</td><td><code>episodes.jsonRoutesPath / jsonRouteTitleTemplate / jsonSectionsUrlTemplate / jsonListPath</code></td><td>路线数组路径（如 <code>play_from</code>；省略则单路线模式，详情数据自身为唯一路线）、路线标题模板、选集接口地址模板、选集列表JSON路径（默认 <code>data.list</code>）</td></tr>
+  <tr><td>单集剧集配置 / 单集字段模板</td><td><code>episodes.itemSelectors</code></td><td>只有 标题、链接 两项；HTML 如 <code>@href</code> + <code>span</code>，JSON 如 <code>{baseUrl}/api/v2/sections/{id}/play-url</code></td></tr>
+  <tr><td>拼接基础URL / 启用HTTPS（复选框）</td><td><code>recommends.urlNeedBaseUrl</code> / <code>recommends.enabledHttps</code></td><td>推荐项链接为相对路径时勾选拼接；http 升级 https（两种模式都有）</td></tr>
+  <tr><td>推荐配置</td><td><code>recommends.listSelector</code>（JSON 另有 <code>jsonUrlTemplate</code>）</td><td>HTML=推荐列表选择器；JSON=推荐接口地址模板 + 推荐列表JSON路径</td></tr>
+  <tr><td>推荐番剧配置 / 推荐字段模板</td><td><code>recommends.itemSelectors</code></td><td>字段同"搜索结果配置"</td></tr>
+</table>
+
+<h3>"视频"Tab → videoUrl</h3>
+<p>两种源模式下，<strong>解析模式下拉框都位于 Tab 第一行</strong>，切换后下方输入框自动增减。</p>
+<p><strong>JSON 模式</strong>：</p>
+<table>
+  <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
+  <tr><td>解析模式（第一行）</td><td><code>videoUrl.pattern</code></td><td>下拉：<strong>JSON接口</strong>（请求选集链接，按路径取值）/ <strong>链接透传</strong>（选集链接直接作为播放页地址）</td></tr>
+  <tr><td>播放地址JSON路径</td><td><code>videoUrl.valuePath</code></td><td>默认 <code>data.url</code>；仅在"JSON接口"模式显示</td></tr>
+  <tr><td>后处理</td><td><code>videoUrl.postProcess</code></td><td>旧版字符串：<code>substringBetween('a','b')</code> / <code>replaceAll('old','new')</code> / <code>base64Decode()</code> / <code>decodeUri()</code>（可组合）；仅在"JSON接口"模式显示（透传模式引擎不执行后处理）</td></tr>
+  <tr><td>内嵌视频解析JS(可选)</td><td><code>videoUrl.iframeSelector</code></td><td>仅在"链接透传"模式显示：选集链接作为播放页在 WebView 打开后执行此 JS，需返回真实直链（<code>ERR_</code> 开头表示失败），详见<a href="#webview-js">WebView JS 解析</a></td></tr>
+</table>
+<p><strong>HTML 模式</strong>：</p>
+<table>
+  <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
+  <tr><td>解析模式（第一行）</td><td><code>videoUrl.pattern</code></td><td>下拉：<strong>选择器</strong>（默认，请求播放页后按选择器取属性）/ <strong>正则表达式</strong>（请求播放页原始文本，正则捕获组 1 为播放地址）</td></tr>
+  <tr><td>播放链接选择器 / 播放链接正则</td><td><code>videoUrl.urlSelector</code></td><td>随解析模式切换：选择器模式填 <code>选择器@属性</code> 如 <code>video@src</code>；正则模式填正则表达式，如 <code>"url":"([^"]+)"</code>（注意 JSON 转义）</td></tr>
+  <tr><td>后处理</td><td><code>videoUrl.postProcess</code></td><td>同上</td></tr>
+  <tr><td>内嵌视频选择器(执行JS，最终需返回播放链接)</td><td><code>videoUrl.iframeSelector</code></td><td>选择器提取到的是播放器页地址（如 <code>iframe@src</code>）时，在该页内执行此 JS 获取真实直链，详见<a href="#webview-js">WebView JS 解析</a></td></tr>
+</table>
+<div class="note">推荐工作流：先在应用内把能填的都填完保存测试。itemSelectors 字段级的 postProcess（含单集标题/链接、详情封面）已支持在编辑页勾选后以表单方式编辑（类型下拉 + 参数行）；仍遇编辑页不支持的能力时（如 pipeline 嵌套），用「JSON(高级)」或“长按卡片 → 复制视频源”导出 JSON，在电脑上改完导入。</div>
+
+<h2 id="examples">完整示例</h2>
+<h3>HTML 源（模板站，精简）</h3>
+<pre><code>{
+  "version": "1.0.0",
+  "sources": [{
+    "key": "key_example",
+    "name": "示例动漫",
+    "group": "动漫",
+    "baseUrl": "https://www.example.com/",
+    "version": "1.0.0",
+    "enabled": true,
+    "priority": 3,
+    "description": "示例动漫站（苹果 CMS 模板结构）",
+    "defaultSource": false,
+    "parserConfig": {
+      "search": { "videos": {
+        "urlTemplate": "/index.php/vod/search/wd/{keyword}.html",
+        "listSelector": "div.module-card-item",
+        "urlNeedBaseUrl": true, "enabledHttps": true,
+        "itemSelectors": { "url": "a.module-card-item-poster@href", "imgUrl": "img@data-original", "title": ".module-card-item-title", "episode": ".module-item-note" }
+      } },
+      "homepage": {
+        "banner": {
+          "listSelector": ".sm-swiper .swiper-slide",
+          "urlNeedBaseUrl": true, "enabledHttps": true,
+          "itemSelectors": { "url": "a@href", "imgUrl": "img@src", "title": ".title", "episode": ".ins p" }
+        },
+        "category": {
+          "title": "h2.module-title", "titles": "div.module > div.module-heading",
+          "moreUrl": "a.module-heading-more@href", "moreUrlNeedBaseUrl": true,
+          "videoLists": "div.module > div.module-main",
+          "videos": { "listSelector": "a.module-poster-item", "containerSelector": "div.module-items",
+                      "urlNeedBaseUrl": true, "enabledHttps": true,
+                      "itemSelectors": { "url": "@href", "imgUrl": "img@data-original", "title": ".module-poster-item-title", "episode": ".module-item-note" } }
+        }
+      },
+      "detail": {
+        "titleSelector": ".module-info-heading h1",
+        "descSelector": ".module-info-introduction-content p",
+        "coverSelector": ".module-info-poster img@data-original",
+        "episodes": {
+          "routeTitlesSelector": "#y-playList .module-tab-item > span",
+          "routeContainersSelector": "#panel1 .module-play-list-content",
+          "itemSelector": ".module-play-list-link",
+          "itemSelectors": { "url": "@href", "title": "span" }
+        },
+        "recommends": {
+          "listSelector": "div.module-poster-items-base a.module-poster-item",
+          "urlNeedBaseUrl": true, "enabledHttps": true,
+          "itemSelectors": { "url": "@href", "imgUrl": "img@data-original", "title": ".module-poster-item-title", "episode": ".module-item-note" }
+        }
+      },
+      "videoUrl": { "pattern": "regex", "urlSelector": "\"url\":\"([^\"]+)\",\"url_next\"", "postProcess": "replaceAll('\\\\/', '/')" }
+    }
+  }]
+}</code></pre>
+<h3>JSON 源（接口站，精简）</h3>
+<pre><code>{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-09-22",
+  "sources": [{
+    "key": "key_example_api",
+    "name": "示例接口站",
+    "group": "动漫",
+    "baseUrl": "https://api.example.com",
+    "version": "1.0.0",
+    "enabled": true,
+    "priority": 15,
+    "description": "示例接口站（JSON API 源；播放需账号登录）",
+    "defaultSource": false,
+    "login": {
+      "type": "api",
+      "loginUrl": "/api/user/login",
+      "tokenPath": "data.token",
+      "authHeaderName": "Authorization",
+      "authValueTemplate": "{token}"
+    },
+    "parserConfig": {
+      "sourceType": "json",
+      "requestHeaders": { "Accept": "application/json", "X-App-Name": "example_app", "X-App-Version": "1.0.0", "X-Time-Zone": "Asia/Shanghai" },
+      "search": { "videos": {
+        "urlTemplate": "/api/video/search?q={keyword}&page={page}&page_size=20",
+        "listSelector": "data.list",
+        "urlNeedBaseUrl": false, "enabledHttps": true,
+        "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/video/{video_id}", "imgUrl": "{cover_url}", "episode": "{remarks}" }
+      } },
+      "homepage": {
+        "banner": {
+          "urlTemplate": "/api/index/timeline?weekday={today}",
+          "listSelector": "data.list.0.videos",
+          "urlNeedBaseUrl": false, "enabledHttps": true,
+          "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/video/{video_id}", "imgUrl": "{cover_url}", "episode": "{remarks}" }
+        },
+        "category": {
+          "title": "", "titles": "", "moreUrl": "", "moreUrlNeedBaseUrl": false, "videoLists": "",
+          "videos": { "urlTemplate": "", "listSelector": "data.list", "urlNeedBaseUrl": false, "enabledHttps": true,
+                      "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/video/{video_id}", "imgUrl": "{cover_url}", "episode": "{remarks}" } },
+          "cards": [
+            { "title": "周榜", "url": "/api/rank/1/videos", "moreUrl": "/api/rank/1/videos", "listPath": "data.list",
+              "urlNeedBaseUrl": false, "enabledHttps": true,
+              "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/video/{video_id}", "imgUrl": "{cover_url}", "episode": "{remarks}" } }
+          ]
+        }
+      },
+      "detail": {
+        "titleSelector": "{title}",
+        "descSelector": "{description}",
+        "coverSelector": "{cover_url}",
+        "categorySelector": "{categories}",
+        "directorSelector": "{director}",
+        "updateTimeSelector": "{publish_date}",
+        "protagonistSelector": "{actor}",
+        "episodes": {
+          "jsonRoutesPath": "play_from",
+          "jsonRouteTitleTemplate": "{title}",
+          "jsonSectionsUrlTemplate": "{baseUrl}/api/video/{id}/episodes?route={route}&page=1&page_size=100",
+          "jsonListPath": "data.list",
+          "itemSelector": "",
+          "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/episode/{id}/play-url" }
+        },
+        "recommends": {
+          "listSelector": "data.list",
+          "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/video/{video_id}", "imgUrl": "{cover_url}", "episode": "{remarks}" },
+          "urlNeedBaseUrl": false, "enabledHttps": true,
+          "jsonUrlTemplate": "{baseUrl}/api/video/{id}/related?limit=6"
+        }
+      },
+      "videoUrl": { "pattern": "json", "valuePath": "data.url" }
+    }
+  }]
+}</code></pre>
+
+<h2 id="debug">调试与常见问题</h2>
+<h3>排查顺序</h3>
+<p>搜索没结果 → 检查 <code>search.videos</code>；有结果但点进去空白 → 检查 <code>detail</code>；详情正常但没选集 → 检查 <code>episodes</code>；选集有了但播不了 → 检查 <code>videoUrl</code>。</p>
+<h3>常见问题</h3>
+<table>
+  <tr><th>症状</th><th>原因与解法</th></tr>
+  <tr><td>改了配置没反应</td><td>JSON 文件方式：修改后必须重新"覆盖导入"才会生效；应用内编辑：确认点了"保存"（标题栏保存按钮变色）</td></tr>
+  <tr><td>列表为空</td><td><code>listSelector</code> 没命中任何元素 / JSON 路径写错。用浏览器控制台 <code>document.querySelectorAll('...')</code> 验证选择器</td></tr>
+  <tr><td>标题正常但没图</td><td>封面在懒加载属性里，把 <code>img@src</code> 换成 <code>img@data-original</code> 等</td></tr>
+  <tr><td>点详情跳转错误</td><td>相对路径没拼 baseUrl：<code>urlNeedBaseUrl</code> 设为 <code>true</code></td></tr>
+  <tr><td>图片加载失败</td><td>站点图片是 http 而 app 强制 https？检查 <code>enabledHttps</code>；或站点有防盗链（Referer 校验），暂无解</td></tr>
+  <tr><td>播放报"解析失败"</td><td>正则没匹配上：把 <code>urlSelector</code> 正则放到播放页源码里搜一遍确认；注意 JSON 转义（<code>\"</code> 在 JSON 里要写 <code>\\\\\"</code>）</td></tr>
+  <tr><td>选集只有一条路线</td><td>多路线站点用了单路线写法：补 <code>routeTitlesSelector</code> + <code>routeContainersSelector</code></td></tr>
+  <tr><td>JSON 源接口 401/403</td><td>需要登录：配置 <code>login</code>，并在源列表长按源卡片登录；或接口要求特定请求头，补 <code>requestHeaders</code></td></tr>
+  <tr><td>WebView JS 解析返回 ERR_</td><td>JS 内部报错。返回值以 <code>ERR_</code> 开头会显示在错误提示里，按码回溯 JS 逻辑</td></tr>
+</table>
+<h3>选择器调试技巧</h3>
+<p>浏览器控制台直接验证：</p>
+<pre><code>// 列表命中几个？
+document.querySelectorAll('div.module-card-item').length
+// 单字段取值对不对？
+document.querySelector('div.module-card-item a.module-card-item-poster').href</code></pre>
+
+<p class="toc-top" style="margin-top:56px">— 完 —</p>
+<p class="toc-top">本文档基于 AnimeZ 引擎源码（DataSourceConfig / GenericDataSource / StringProcessor / ScriptProcessor）整理，字段以引擎实际实现为准。</p>
+
+</main>
+</div>
+
+<script>
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.sidebar a[href^="#"]'));
+  var map = {};
+  links.forEach(function (a) {
+    var el = document.getElementById(a.getAttribute('href').slice(1));
+    if (el) { map[el.id] = a; }
+  });
+  function onScroll() {
+    var current = null;
+    var y = window.scrollY + 120;
+    for (var id in map) {
+      var el = document.getElementById(id);
+      if (el && el.offsetTop <= y) { current = id; }
+    }
+    links.forEach(function (a) { a.classList.remove('active'); });
+    if (current && map[current]) { map[current].classList.add('active'); }
+  }
+  window.addEventListener('scroll', onScroll);
+  onScroll();
+})();
+</script>
+</body>
+</html>

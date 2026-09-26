@@ -1,0 +1,96 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-09-21",
+  "sources": [
+    {
+      "key": "key_fqdmdm",
+      "version": "1.0.0",
+      "name": "番茄动漫",
+      "group": "动漫",
+      "baseUrl": "https://www.fqdm.cc/",
+      "enabled": true,
+      "priority": 3,
+      "description": "番茄动漫 二次元的异世界之旅 www.fqdm.cc",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/index.php/vod/search/wd/{keyword}.html",
+            "listSelector": "div.module-card-item",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.module-card-item-poster@href",
+              "imgUrl": "img@data-original",
+              "title": ".module-card-item-title",
+              "episode": ".module-item-note"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "listSelector": ".sm-swiper .swiper-slide",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": "img@src",
+              "title": ".title",
+              "episode": ".ins p"
+            }
+          },
+          "category": {
+            "title": "h2.module-title",
+            "titles": "div.module > div.module-heading",
+            "moreUrl": "a.module-heading-more@href",
+            "moreUrlNeedBaseUrl": true,
+            "videoLists": "div.module > div.module-main",
+            "videos": {
+              "listSelector": "a.module-poster-item",
+              "containerSelector": "div.module-items",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": "@href",
+                "imgUrl": "img@data-original",
+                "title": ".module-poster-item-title",
+                "episode": ".module-item-note"
+              }
+            }
+          }
+        },
+        "detail": {
+          "titleSelector": ".module-info-heading h1",
+          "descSelector": ".module-info-introduction-content p",
+          "coverSelector": ".module-info-poster img@data-original",
+          "episodes": {
+            "routeTitlesSelector": "#y-playList .module-tab-item > span",
+            "routeContainersSelector": "#panel1 .module-play-list-content",
+            "itemSelector": ".module-play-list-link",
+            "itemSelectors": {
+              "url": "@href",
+              "title": "span"
+            }
+          },
+          "recommends": {
+            "listSelector": "div.module-poster-items-base a.module-poster-item",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "@href",
+              "imgUrl": "img@data-original",
+              "title": ".module-poster-item-title",
+              "episode": ".module-item-note"
+            }
+          }
+        },
+        "videoUrl": {
+          "pattern": "regex",
+          "urlSelector": "\"url\":\"([^\"]+)\",\"url_next\"",
+          "postProcess": "replaceAll('\\\\/', '/')"
+        }
+      }
+    }
+  ]
+}

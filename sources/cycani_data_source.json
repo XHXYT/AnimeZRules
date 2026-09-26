@@ -1,0 +1,163 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-09-22",
+  "sources": [
+    {
+      "key": "key_cycani",
+      "name": "次元城动画",
+      "group": "动漫",
+      "baseUrl": "https://www.cycani.org",
+      "version": "1.0.0",
+      "enabled": true,
+      "priority": 15,
+      "description": "次元城动画 www.cycani.org（JSON API 源；播放需要账号登录：长按源卡片-账号登录）",
+      "defaultSource": false,
+      "login": {
+        "type": "api",
+        "loginUrl": "/api/auth/login",
+        "usernameField": "username",
+        "passwordField": "password",
+        "tokenPath": "data.token",
+        "authHeaderName": "Authorization",
+        "authValueTemplate": "{token}"
+      },
+      "parserConfig": {
+        "sourceType": "json",
+        "requestHeaders": {
+          "Accept": "application/json",
+          "X-App-Name": "cyc_web",
+          "X-App-Version": "cycweb",
+          "X-Time-Zone": "Asia/Shanghai"
+        },
+        "search": {
+          "videos": {
+            "urlTemplate": "/api/videos/search?q={keyword}&page={page}&page_size=20",
+            "listSelector": "data.list",
+            "urlNeedBaseUrl": false,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "title": "{title}",
+              "url": "{baseUrl}/api/videos/{video_id}",
+              "imgUrl": "{cover_url}",
+              "episode": "{remarks}"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "/api/index/weekday?weekday={today}",
+            "listSelector": "data.list.0.videos",
+            "urlNeedBaseUrl": false,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "title": "{title}",
+              "url": "{baseUrl}/api/videos/{video_id}",
+              "imgUrl": "{cover_url}",
+              "episode": "{remarks}"
+            }
+          },
+          "category": {
+            "title": "",
+            "titles": "",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "data.list",
+              "urlNeedBaseUrl": false,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "title": "{title}",
+                "url": "{baseUrl}/api/videos/{video_id}",
+                "imgUrl": "{cover_url}",
+                "episode": "{remarks}"
+              }
+            },
+            "cards": [
+              {
+                "title": "周榜",
+                "url": "/api/ranks/1/videos",
+                "moreUrl": "/api/ranks/1/videos",
+                "listPath": "data.list",
+                "urlNeedBaseUrl": false,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{baseUrl}/api/videos/{video_id}",
+                  "imgUrl": "{cover_url}",
+                  "episode": "{remarks}"
+                }
+              },
+              {
+                "title": "TV番组",
+                "url": "/api/videos?zone_id=1&order_by=update_time&page=1&page_size=20",
+                "moreUrl": "/api/videos?zone_id=1&order_by=update_time&page={page}&page_size=20",
+                "listPath": "data.list",
+                "urlNeedBaseUrl": false,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{baseUrl}/api/videos/{video_id}",
+                  "imgUrl": "{cover_url}",
+                  "episode": "{remarks}"
+                }
+              },
+              {
+                "title": "剧场版",
+                "url": "/api/videos?zone_id=2&order_by=update_time&page=1&page_size=20",
+                "moreUrl": "/api/videos?zone_id=2&order_by=update_time&page={page}&page_size=20",
+                "listPath": "data.list",
+                "urlNeedBaseUrl": false,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{baseUrl}/api/videos/{video_id}",
+                  "imgUrl": "{cover_url}",
+                  "episode": "{remarks}"
+                }
+              }
+            ]
+          }
+        },
+        "detail": {
+          "titleSelector": "{title}",
+          "descSelector": "{description}",
+          "coverSelector": "{cover_url}",
+          "categorySelector": "{categories}",
+          "directorSelector": "{director}",
+          "updateTimeSelector": "{publish_date}",
+          "protagonistSelector": "{actor}",
+          "episodes": {
+            "jsonRoutesPath": "play_from",
+            "jsonRouteTitleTemplate": "{title}",
+            "jsonSectionsUrlTemplate": "{baseUrl}/api/videos/{id}/sections?player_code={code}&page=1&page_size=100",
+            "jsonListPath": "data.list",
+            "itemSelector": "",
+            "itemSelectors": {
+              "title": "{title}",
+              "url": "{baseUrl}/api/v2/sections/{id}/play-url"
+            }
+          },
+          "recommends": {
+            "listSelector": "data.list",
+            "itemSelectors": {
+              "title": "{title}",
+              "url": "{baseUrl}/api/videos/{video_id}",
+              "imgUrl": "{cover_url}",
+              "episode": "{remarks}"
+            },
+            "urlNeedBaseUrl": false,
+            "enabledHttps": true,
+            "jsonUrlTemplate": "{baseUrl}/api/videos/{id}/recommendations?limit=6"
+          }
+        },
+        "videoUrl": {
+          "pattern": "json",
+          "valuePath": "data.url"
+        }
+      }
+    }
+  ]
+}

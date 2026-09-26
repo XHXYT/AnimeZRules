@@ -1,0 +1,211 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-09-25",
+  "sources": [
+    {
+      "key": "key_girigirilove",
+      "version": "1.0.0",
+      "name": "girigirilove",
+      "group": "动漫",
+      "baseUrl": "https://ani.girigirilove.com",
+      "enabled": true,
+      "priority": 3,
+      "description": "girigirilove 免费在线动漫网站 ani.girigirilove.com，搜索需图片验证码",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/search/-------------/?wd={keyword}",
+            "listSelector": ".search-list",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": ".detail-pic img@data-src",
+              "title": ".slide-info-title",
+              "episode": ".slide-info-remarks.cor5",
+              "playCount": {
+                "selector": ".slide-info-remarks.cor5",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": { "type": "regex", "pattern": "\\d+(?:\\.\\d+)?万?播放" }
+                }
+              },
+              "year": {
+                "selector": ".slide-info-remarks:nth-child(2)",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": { "type": "regex", "pattern": "\\d{4}" }
+                }
+              },
+              "month": {
+                "selector": ".slide-info-remarks:nth-child(3)",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": { "type": "regex", "pattern": "[一二三四五六七八九十]{1,3}月" }
+                }
+              },
+              "director": {
+                "selector": ".slide-info.partition:contains(导演)",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": { "type": "replace", "search": "^(导演|演员|类型)\\s*:\\s*|\\s*[,，]\\s*$", "replace": "", "flags": "g" }
+                }
+              },
+              "actors": {
+                "selector": ".slide-info.partition:contains(演员)",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": { "type": "replace", "search": "^(导演|演员|类型)\\s*:\\s*|\\s*[,，]\\s*$", "replace": "", "flags": "g" }
+                }
+              },
+              "tags": {
+                "selector": ".slide-info.partition:contains(类型)",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": { "type": "replace", "search": "^(导演|演员|类型)\\s*:\\s*|\\s*[,，]\\s*$", "replace": "", "flags": "g" }
+                }
+              }
+            }
+          },
+          "captcha": {
+            "detectSelector": "img.ds-verify-img",
+            "imageUrlSelector": "img.ds-verify-img@src",
+            "imageNeedBaseUrl": true,
+            "imageCacheBustParam": "r",
+            "verifyUrlTemplate": "/index.php/ajax/verify_check?type=search&verify={code}",
+            "successContains": "\"code\":1"
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "",
+            "listSelector": ".slide-time-bj",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": ".slide-time-img3@data-background",
+              "title": ".slide-info-title",
+              "episode": ".slide-info-type span"
+            }
+          },
+          "category": {
+            "videos": {
+              "urlTemplate": "/show/2--------{page}---/",
+              "listSelector": ".public-list-box",
+              "containerSelector": ".public-r",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": "a.public-list-exp@href",
+                "imgUrl": "img.gen-movie-img@data-src",
+                "title": "a.public-list-exp@title",
+                "episode": ".public-list-prb"
+              }
+            },
+            "cards": [
+              {
+                "title": "最近大家在看",
+                "url": "/",
+                "listSelector": ".star-works .public-list-box",
+                "maxItems": 12,
+                "itemSelectors": {
+                  "url": "a.public-list-exp@href",
+                  "imgUrl": "img.gen-movie-img@data-src",
+                  "title": "a.public-list-exp@title",
+                  "episode": ".public-list-prb"
+                },
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true
+              },
+              {
+                "title": "日番",
+                "url": "/show/2-----------/",
+                "moreUrl": "/show/2--------{page}---/",
+                "listSelector": ".public-list-box",
+                "maxItems": 12,
+                "itemSelectors": {
+                  "url": "a.public-list-exp@href",
+                  "imgUrl": "img.gen-movie-img@data-src",
+                  "title": "a.public-list-exp@title",
+                  "episode": ".public-list-prb"
+                },
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true
+              },
+              {
+                "title": "剧场版",
+                "url": "/show/21-----------/",
+                "moreUrl": "/show/21--------{page}---/",
+                "listSelector": ".public-list-box",
+                "maxItems": 12,
+                "itemSelectors": {
+                  "url": "a.public-list-exp@href",
+                  "imgUrl": "img.gen-movie-img@data-src",
+                  "title": "a.public-list-exp@title",
+                  "episode": ".public-list-prb"
+                },
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true
+              }
+            ]
+          }
+        },
+        "detail": {
+          "titleSelector": "h3.slide-info-title",
+          "descSelector": "#height_limit",
+          "coverSelector": ".detail-pic img@data-src",
+          "episodes": {
+            "routeTitlesSelector": ".anthology-tab a",
+            "routeContainersSelector": ".anthology-list-box",
+            "itemSelector": "ul.anthology-list-play li",
+            "itemSelectors": {
+              "url": "a@href",
+              "title": "a"
+            }
+          },
+          "recommends": {
+            "listSelector": ".hide-b-2 .public-list-box",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.public-list-exp@href",
+              "imgUrl": "img.gen-movie-img@data-src",
+              "title": "a.public-list-exp@title",
+              "episode": ".public-list-prb"
+            }
+          },
+          "extra": {
+            "director": {
+              "selector": ".slide-info.hide.partition:contains(导演)",
+              "postProcess": { "type": "string", "stringProcess": { "type": "replace", "search": "^(导演|演员|类型)\\s*:\\s*|\\s*[,，]\\s*$", "replace": "", "flags": "g" } }
+            },
+            "actors": {
+              "selector": ".slide-info.hide.partition:contains(演员)",
+              "postProcess": { "type": "string", "stringProcess": { "type": "replace", "search": "^(导演|演员|类型)\\s*:\\s*|\\s*[,，]\\s*$", "replace": "", "flags": "g" } }
+            },
+            "tags": {
+              "selector": ".slide-info.hide.partition:contains(类型)",
+              "postProcess": { "type": "string", "stringProcess": { "type": "replace", "search": "^(导演|演员|类型)\\s*:\\s*|\\s*[,，]\\s*$", "replace": "", "flags": "g" } }
+            },
+            "year": {
+              "selector": ".slide-info-remarks:nth-of-type(2)",
+              "postProcess": { "type": "string", "stringProcess": { "type": "regex", "pattern": "\\d{4}" } }
+            },
+            "month": {
+              "selector": ".slide-info-remarks:nth-of-type(3)",
+              "postProcess": { "type": "string", "stringProcess": { "type": "regex", "pattern": "[一二三四五六七八九十]{1,3}月" } }
+            }
+          }
+        },
+        "videoUrl": {
+          "pattern": "regex",
+          "urlSelector": "\"url\":\"([^\"]+)\",\"url_next\"",
+          "postProcess": "base64Decode();decodeUri()"
+        }
+      }
+    }
+  ]
+}

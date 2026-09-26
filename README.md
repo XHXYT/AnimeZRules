@@ -1,221 +1,85 @@
 # AnimeZRules
-AnimeZ的规则仓库，欢迎参与构建>_<
 
-## 源配置文件说明
+AnimeZ 规则仓库 —— 为 [AnimeZ](https://github.com/XHXYT/AnimeZ) 编写源配置，欢迎参与构建沃
 
-**标准视频源配置**
+只要会看浏览器开发者工具，你就能为自己的追番网站写一个源。**不会写代码也没关系**：大部分网站只需要填几十行 JSON 就能跑起来，跟着[写源指南](docs/source-guide.html)从零开始，半小时就能提交你的第一个源。
 
-```json
-{
-  "version": "字符串，配置版本号",
-  "author": "作者",
-  "update_time": "更新时间",
-  "sources": [
-    {
-      // 数据源配置
-      //
-    }
-  ]
-}
-```
+## 可用规则
 
-**配置分享支持**
-- 标准视频源
-- 单个配置对象
-- 配置对象数组
+| 规则 | 类型 | 说明 | 文件 |
+|------|------|------|------|
+| 番茄动漫 | HTML | www.fqdm.cc，模板站经典结构 | [fqdm_data_source.json](sources/fqdm_data_source.json) |
+| 饭团动漫 | HTML | www.acgfta.com | [acgfta_data_source.json](sources/acgfta_data_source.json) |
+| AGE 动漫 | HTML | www.agedm.io | [age_sources_config.json](sources/age_sources_config.json) |
+| 次元城动画 | JSON API | www.cycani.org，接口源示例（播放需账号登录） | [cycani_data_source.json](sources/cycani_data_source.json) |
+| tvtfun | JSON + WebView | www.tvtfun.net，播放可能需手动辅助（应用内自动尝试两次后弹出） | [tvtfun_data_source.json](sources/tvtfun_data_source.json) |
+| 稀饭动漫 | JSON + WebView | next.xifanacg.com（接口 api.xifanacg.com），Supabase PostgREST 接口源（选集内嵌详情接口） | [xifan_data_source.json](sources/xifan_data_source.json) |
+| girigirilove | HTML + 搜索验证码 | ani.girigirilove.com，MacCMS 模板站（播放地址 base64 + URL 解码，搜索需输入图片验证码） | [girigirilove_data_source.json](sources/girigirilove_data_source.json) |
 
-**配置基础信息说明**
+## 如何导入
 
-**1. 基本信息字段**
+1. 下载本仓库 `sources/` 目录中的任意 `*_data_source.json`（或直接使用其 raw 链接）；
+2. 打开 AnimeZ → 我的 → 设置 → 视频源 → 更多菜单 → **导入数据源**；
+3. 选择本地文件或粘贴链接导入，更新配置时请选择**覆盖导入**（修改配置后必须重新导入才会生效）。
 
-| 字段名      | 类型 | 必填 | 说明               | 示例                     |
-|----------|------|----|------------------|------------------------|
-| key      | string | 是  | 数据源唯一标识符         | "key_xxxvideo"         |
-| name     | string | 是  | 数据源显示名称          | "XXX动漫"                |
-| baseUrl  | string | 是  | 网站基础URL地址        | "https://www.xxx.org/" |
-| version  | string | 是  | 数据源版本            | "x.x.x"                |
-| description | string | 否  | 数据源介绍            | "XXXXX"                |
-| enabled  | boolean | 否  | 是否启用该数据源，默认true  | true                   |
-| priority | number | 否  | 数据源优先级，数值越小优先级越高 | 1                      |
+## 如何编写一个源
 
-**解析器配置 (parserConfig)**
+完整字段说明、选择器语法、模板语法、写源实战教程见 **[写源指南](docs/source-guide.html)**。
 
-**2. 搜索功能配置 (search)**
+两种写法任选：
+
+- **电脑写 JSON 导入**：结构最接近的现有源文件复制一份，改 `baseUrl` 和各选择器；
+- **应用内直接填写**：视频源页（我的 → 设置 → 视频源）→ 更多菜单 → 添加新数据源（或点击已有源编辑），每个输入框都有提示文案，指南的[应用内编辑器对照](docs/source-guide.html#editor)一节把每个输入框与配置字段逐一对应，纯手机也能写源。
+
+快速印象——一个 HTML 源的核心就是"在哪找列表、每项取哪些字段"：
+
 ```json
 "search": {
   "videos": {
-    "urlTemplate": "搜索URL模板，支持{keyword}和{page}占位符",
-    "listSelector": "搜索结果列表的CSS选择器",
-    "urlNeedBaseUrl": "boolean, 搜索结果URL是否需要拼接baseUrl",
+    "urlTemplate": "/index.php/vod/search/wd/{keyword}.html",
+    "listSelector": "div.module-card-item",
+    "urlNeedBaseUrl": true,
     "itemSelectors": {
-      "url": "单个视频链接的选择器",
-      "imgUrl": "视频封面图的选择器",
-      "title": "视频标题的选择器", 
-      "episode": "剧集信息的选择器"
-    }
-  }
-}
-```
-
-选择器语法说明：
-
-"a" - 提取元素的文本内容
-
-"a@href" - 提取元素的href属性值
-
-"img@data-original" - 提取元素的data-original属性值
-
-**3. 首页数据配置 (homepage)**\
-3.1 横幅配置 (banner)
-```json
-"banner": {
-  "listSelector": "横幅列表容器的选择器",
-  "urlNeedBaseUrl": "boolean, 横幅项URL是否需要拼接baseUrl",
-  "itemSelectors": {
-    "url": "单个横幅项链接的选择器",
-    "imgUrl": "横幅图片的选择器",
-    "title": "横幅标题的选择器",
-    "episode": "剧集信息的选择器"
-  }
-}
-```
-3.2 分类配置 (category)
-```json
-"category": {
-  "title": "分类标题文本的选择器",
-  "titles": "所有分类标题容器的选择器", 
-  "moreUrl": "「更多」链接的选择器",
-  "moreUrlNeedBaseUrl": "boolean, 更多链接是否需要拼接baseUrl",
-  "videoLists": "视频列表容器的选择器",
-  "videos": {
-    "listSelector": "单个分类中视频列表的选择器",
-    "urlNeedBaseUrl": "boolean, 视频URL是否需要拼接baseUrl",
-    "itemSelectors": {
-      "url": "视频链接的选择器",
-      "imgUrl": "视频封面的选择器",
-      "title": "视频标题的选择器",
-      "episode": "剧集信息的选择器"
-    }
-  }
-}
-```
-**4. 详情页面配置 (detail)**\
- 4.1 基本信息
-```json
-"detail": {
-  "titleSelector": "视频标题的选择器",
-  "descSelector": "视频描述的选择器",
-  "coverSelector": "封面图片的选择器",
-  "categorySelector": "分类信息的选择器（可选）",
-  "directorSelector": "导演信息的选择器（可选）",
-  "updateTimeSelector": "更新时间的选择器（可选）",
-  "protagonistSelector": "主演信息的选择器（可选）"
-}
-```
- 4.2 剧集列表 (episodes)
-```json
-"episodes": {
-  "containerSelector": "剧集列表容器的选择器（单路线）",
-  "routeTitlesSelector": "多路线标题的选择器（多路线）",
-  "routeContainersSelector": "多路线容器的选择器（多路线）",
-  "itemSelector": "单个剧集项的选择器",
-  "itemSelectors": {
-    "url": "剧集链接的选择器",
-    "title": "剧集标题的选择器"
-  }
-}
-```
-单路线 vs 多路线：
-
-单路线：使用 containerSelector + itemSelector
-
-多路线：使用 routeTitlesSelector + routeContainersSelector + itemSelector
-
-4.3 推荐视频 (recommends)
-```json
-"recommends": {
-  "listSelector": "推荐列表容器的选择器",
-  "urlNeedBaseUrl": "boolean, 推荐项URL是否需要拼接baseUrl",
-  "itemSelectors": {
-    "url": "推荐视频链接的选择器",
-    "imgUrl": "推荐视频封面的选择器",
-    "title": "推荐视频标题的选择器",
-    "episode": "剧集信息的选择器"
-  }
-}
-```
-**5. 视频URL解析配置 (videoUrl)**
-```json
-"videoUrl": {
-  "urlSelector": "包含视频URL的元素选择器",
-  "attribute": "包含URL的属性名称",
-  "urlExtractor": "提取方式：'regex'或'javascript'",
-  "pattern": "正则表达式模式（当urlExtractor为'regex'时使用）",
-  "postProcess": "后处理操作字符串"
-}
-```
-
-postProcess 支持的操作：
-
-"substringBetween('start','end')" - 提取start和end之间的字符串
-
-"replaceAll('old','new')" - 替换字符串
-
-示例：
-
-```json
-{
-  "urlSelector": "a#play_1",
-  "attribute": "onclick", 
-  "postProcess": "substringBetween('','$')"
-}
-```
-**配置示例说明**
-
-搜索配置示例
-```json
-"search": {
-  "videos": {
-    "urlTemplate": "/search/{keyword}/?page={page}",
-    "listSelector": "div.row > div > div",
-    "urlNeedBaseUrl": false,
-    "itemSelectors": {
-      "url": "a@href",
+      "url": "a.module-card-item-poster@href",
       "imgUrl": "img@data-original",
-      "title": "img@alt",
-      "episode": "div > div.video_cover > div > span"
+      "title": ".module-card-item-title",
+      "episode": ".module-item-note"
     }
   }
 }
 ```
-搜索URL：baseUrl + "/search/关键字/?page=1"
 
-在每个 div.row > div > div 元素中提取视频信息
+## 用 AI 写源
 
-链接从 a 标签的href属性提取
+不想手动分析选择器？本仓库自带一个面向 AI 的写源技能 [`skills/animez-source/SKILL.md`](skills/animez-source/SKILL.md)（标准 Agent Skills 格式）。把仓库克隆到本地后：
 
-图片从 img 标签的data-original属性提取（非标准src属性）
+- **Claude Code** 等支持 skills 的工具：将该文件夹复制（或软链）到 `~/.claude/skills/`（或项目的 `.claude/skills/`）；
+- 其他 AI 工具：直接把 `SKILL.md` 连同它引用的 [写源指南](docs/source-guide.html) 和任一现成源文件发给 AI 即可。
 
-**最佳实践**
+之后对 AI 说"帮我给 xx 网站写一个 AnimeZ 源"，它会按照技能里的工作流（判定模式 → 站点勘察 → 起草 → 自检 → 验证）产出配置。
 
-1. 选择器编写
+## 参与贡献
 
-优先使用具有唯一性的class或id
+欢迎为任何影视/动漫网站提交新源或修复已有源，步骤：
 
-避免使用可能变化的位置选择器（如:nth-child(3)）
+1. Fork 本仓库；
+2. 新增源请以 `你的源名_data_source.json` 命名（一行一个源，`sources` 数组），放在 `sources/` 目录；
+3. 确保文件是**合法 JSON**（可用任意 JSON 校验工具检查）；
+4. 在真机/模拟器上通过"导入数据源"实际验证：搜索、首页、详情、选集、播放全部可用；
+5. 提交 Pull Request，说明测试通过的站点功能与设备。
 
-使用浏览器开发者工具检查元素结构
+约定：
 
-2. 属性提取
+- `key` 全局唯一，建议 `key_` + 拼音/英文缩写（如 `key_fqdmdm`）；
+- `version` 语义化，每次修改记得递增；
+- `update_time` 与实际修改日期一致；
+- 站点接口若需要固定请求头，写在 `parserConfig.requestHeaders`，不要硬编码进 URL；
+- 不要提交任何账号、密码、Cookie 等私人信息。
 
-标准属性："img@src"
+## 反馈
 
-自定义属性："img@data-original"
+源失效、字段写法有疑问、想要某个站点的新源？欢迎开 Issue 讨论。
 
-文本内容：直接使用标签选择器
+## 免责声明
 
-3. URL处理
-
-完整URL：urlNeedBaseUrl: false
-
-相对路径：urlNeedBaseUrl: true
+本仓库所有规则仅供学习交流使用，规则本身不包含任何视频资源，一切内容均来自目标站点自身公开接口/页面。请支持正版，如有侵权请联系删除。

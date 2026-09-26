@@ -1,0 +1,127 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-09-22",
+  "sources": [
+    {
+      "key": "key_acgfta",
+      "version": "1.0.0",
+      "name": "饭团动漫",
+      "group": "动漫",
+      "baseUrl": "https://acgfta.com",
+      "enabled": true,
+      "priority": 10,
+      "description": "饭团动漫 acgfta.com：首页今日番剧轮播 + 最近更新/剧场版独立页面卡片（HTML卡片模式）",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/search.html?wd={keyword}",
+            "listSelector": ".anime-card",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.stretched-link@href",
+              "imgUrl": "img.anime-cover@data-src",
+              "title": "a.stretched-link",
+              "episode": ".anime-update-info p"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "",
+            "listSelector": ".anime-schedule:first-of-type .anime-card",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.stretched-link@href",
+              "imgUrl": "img.anime-cover@data-src",
+              "title": "a.stretched-link",
+              "episode": ".anime-update-info p"
+            }
+          },
+          "category": {
+            "title": "h4",
+            "titles": ".anime-schedule h4",
+            "moreUrl": "h4@href",
+            "moreUrlNeedBaseUrl": true,
+            "videoLists": ".anime-schedule .row",
+            "videos": {
+              "urlTemplate": "",
+              "containerSelector": ".row.row-cols-lg-6",
+              "listSelector": ".anime-card",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": "a.stretched-link@href",
+                "imgUrl": "img.anime-cover@data-src",
+                "title": "a.stretched-link",
+                "episode": ".anime-update-info p"
+              }
+            },
+            "cards": [
+              {
+                "title": "最近更新",
+                "url": "/ft/recent.html",
+                "moreUrl": "/ft/recent.html",
+                "listSelector": ".anime-card",
+                "itemSelectors": {
+                  "url": "a.stretched-link@href",
+                  "imgUrl": "img.anime-cover@data-src",
+                  "title": "a.stretched-link",
+                  "episode": ".anime-update-info p"
+                },
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true
+              },
+              {
+                "title": "剧场版",
+                "url": "/ft/top-movie.html",
+                "moreUrl": "/ft/top-movie.html",
+                "listSelector": ".anime-card",
+                "itemSelectors": {
+                  "url": "a.stretched-link@href",
+                  "imgUrl": "img.anime-cover@data-src",
+                  "title": "a.stretched-link"
+                },
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true
+              }
+            ]
+          }
+        },
+        "detail": {
+          "titleSelector": ".detail-anime-title h6",
+          "descSelector": ".detail-anime-intro p",
+          "coverSelector": "img.anime-cover@data-src",
+          "episodes": {
+            "routeTitlesSelector": "ul.nav-pills .nav-link",
+            "routeContainersSelector": ".anime-episode",
+            "itemSelector": "a.btn-episode",
+            "itemSelectors": {
+              "url": "a.btn-episode@href",
+              "title": "a.btn-episode"
+            }
+          },
+          "recommends": {
+            "listSelector": ".detail-anime-recommend .anime-card",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.stretched-link@href",
+              "imgUrl": "img.anime-cover@data-src",
+              "title": "a.stretched-link",
+              "episode": ".anime-update-info p"
+            }
+          }
+        },
+        "videoUrl": {
+          "pattern": "regex",
+          "urlSelector": "\"url\":\"(https[^\"]*)\"",
+          "postProcess": "replaceAll('\\\\', '')"
+        }
+      }
+    }
+  ]
+}

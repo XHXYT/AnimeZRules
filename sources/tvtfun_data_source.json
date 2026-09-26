@@ -1,0 +1,178 @@
+{
+  "version": "1.0.1",
+  "author": "user",
+  "update_time": "2026-09-23",
+  "sources": [
+    {
+      "key": "key_tvtfun",
+      "name": "天天番",
+      "group": "动漫",
+      "baseUrl": "https://www.tvtfun.net",
+      "version": "1.0.1",
+      "enabled": true,
+      "priority": 15,
+      "description": "天天番 tvtfun.net（JSON API 源；播放地址通过隐藏 WebView 在站点播放页内解析，需设备网络可正常访问站点）",
+      "defaultSource": false,
+      "parserConfig": {
+        "sourceType": "json",
+        "requestHeaders": {
+          "Accept": "application/json",
+          "RSC": "1"
+        },
+        "search": {
+          "videos": {
+            "urlTemplate": "/api/videos/search?q={keyword}&pageSize=20",
+            "listSelector": "data.videos",
+            "urlNeedBaseUrl": false,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "title": "{name}",
+              "url": "{baseUrl}/api/videos/{id}",
+              "imgUrl": {
+                "selector": "{pic}",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": {
+                    "type": "replace",
+                    "search": "^https://lain\\.bgm\\.tv/(.+)$",
+                    "replace": "https://www.tvtfun.net/_next/image?w=640&q=75&url=https://lain.bgm.tv/$1",
+                    "flags": ""
+                  }
+                }
+              },
+              "episode": "{remarks}"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "/",
+            "listSelector": "regex:\"data\":\\{\"items\":(\\[[\\s\\S]*?\\])\\},\"type\":\"video-banner\"",
+            "urlNeedBaseUrl": false,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "title": "{name}",
+              "url": "{baseUrl}/api/videos/{id}",
+              "imgUrl": "{pic}",
+              "episode": "{blurb}"
+            }
+          },
+          "category": {
+            "title": "",
+            "titles": "",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "data.videos",
+              "urlNeedBaseUrl": false,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "title": "{name}",
+                "url": "{baseUrl}/api/videos/{id}",
+                "imgUrl": {
+                  "selector": "{pic}",
+                  "postProcess": {
+                    "type": "string",
+                    "stringProcess": {
+                      "type": "replace",
+                      "search": "^https://lain\\.bgm\\.tv/(.+)$",
+                      "replace": "https://www.tvtfun.net/_next/image?w=640&q=75&url=https://lain.bgm.tv/$1",
+                      "flags": ""
+                    }
+                  }
+                },
+                "episode": "{remarks}"
+              }
+            },
+            "cards": [
+              {
+                "title": "最近更新",
+                "url": "/api/videos?orderBy=updatedAt&order=desc&pageSize=20",
+                "moreUrl": "/api/videos?orderBy=updatedAt&order=desc&pageSize=50",
+                "listPath": "data.videos",
+                "urlNeedBaseUrl": false,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "title": "{name}",
+                  "url": "{baseUrl}/api/videos/{id}",
+                  "imgUrl": {
+                    "selector": "{pic}",
+                    "postProcess": {
+                      "type": "string",
+                      "stringProcess": {
+                        "type": "replace",
+                        "search": "^https://lain\\.bgm\\.tv/(.+)$",
+                        "replace": "https://www.tvtfun.net/_next/image?w=640&q=75&url=https://lain.bgm.tv/$1",
+                        "flags": ""
+                      }
+                    }
+                  },
+                  "episode": "{remarks}"
+                }
+              },
+              {
+                "title": "播放排行",
+                "url": "/api/videos?orderBy=hits&order=desc&pageSize=20",
+                "moreUrl": "/api/videos?orderBy=hits&order=desc&pageSize=50",
+                "listPath": "data.videos",
+                "urlNeedBaseUrl": false,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "title": "{name}",
+                  "url": "{baseUrl}/api/videos/{id}",
+                  "imgUrl": {
+                    "selector": "{pic}",
+                    "postProcess": {
+                      "type": "string",
+                      "stringProcess": {
+                        "type": "replace",
+                        "search": "^https://lain\\.bgm\\.tv/(.+)$",
+                        "replace": "https://www.tvtfun.net/_next/image?w=640&q=75&url=https://lain.bgm.tv/$1",
+                        "flags": ""
+                      }
+                    }
+                  },
+                  "episode": "{remarks}"
+                }
+              }
+            ]
+          }
+        },
+        "detail": {
+          "titleSelector": "{name}",
+          "descSelector": "{content}",
+          "coverSelector": "{pic}",
+          "coverPostProcess": {
+            "type": "string",
+            "stringProcess": {
+              "type": "replace",
+              "search": "^https://lain\\.bgm\\.tv/(.+)$",
+              "replace": "https://www.tvtfun.net/_next/image?w=640&q=75&url=https://lain.bgm.tv/$1",
+              "flags": ""
+            }
+          },
+          "categorySelector": "{area}",
+          "directorSelector": "{director}",
+          "updateTimeSelector": "{remarks}",
+          "protagonistSelector": "{actor}",
+          "episodes": {
+            "jsonRoutesPath": "playSources",
+            "jsonRouteTitleTemplate": "{name}",
+            "jsonListPath": "episodes",
+            "itemSelector": "",
+            "itemSelectors": {
+              "title": "{name}",
+              "url": "{baseUrl}/video/{slug}/play?source={routeIndex}&episode={sort}"
+            }
+          }
+        },
+        "videoUrl": {
+          "pattern": "link",
+          "iframeSelector": "(function(){try{var q=new URLSearchParams(location.search);var src=parseInt(q.get('source')||'0',10);var ep=parseInt(q.get('episode')||'0',10);var t='';try{var a=self.__next_f||[];for(var i=0;i<a.length;i++){if(a[i]&&a[i][1]){t+=a[i][1];}}}catch(e0){}if(t.indexOf('playSourceId')<0){var sc=document.getElementsByTagName('script');for(var j=0;j<sc.length;j++){t+=(sc[j].textContent||'');}t=t.replace(/\\\\\"/g,'\"');}var re=/\\{\"id\":\"(cm[^\"]+)\",\"playSourceId\":\"(cm[^\"]+)\",\"bgmEpisodeId\":[0-9]+,\"name\":\"[^\"]*\",\"url\":\"[^\"]*\",\"sort\":([0-9]+)/g;var m=null;var order=[];var mp={};while((m=re.exec(t))!==null){var ps=m[2];if(!mp[ps]){mp[ps]=[];order.push(ps);}mp[ps].push({id:m[1],sort:parseInt(m[3],10)});}if(!order.length){return 'ERR_NO_EPISODES';}var k=src;if(k<0){k=0;}if(k>=order.length){k=order.length-1;}var list=mp[order[k]];var hit=null;for(var n=0;n<list.length;n++){if(list[n].sort===ep){hit=list[n];break;}}if(!hit){hit=list[0];}var fr=30;var att=1;try{att=parseInt(q.get('_r')||'1',10)||1;}catch(e2){}var fps=att===2?120:60;try{fr=Math.max(30,Math.round((performance.now()-700)*fps/1000));}catch(e2){}fr=Math.round(fr*(0.92+Math.random()*0.16));var w=window.innerWidth||0;var h=window.innerHeight||0;if(w<320){w=412;}if(h<180){h=915;}var ctx=null;try{ctx=btoa('{\"f\":'+fr+',\"v\":1,\"w\":'+w+',\"hgt\":'+h+',\"p\":1}');}catch(e3){return 'ERR_CTX';}var xhr=new XMLHttpRequest();xhr.open('GET','/api/videos/resolve-play-url?episodeId='+encodeURIComponent(hit.id),false);xhr.setRequestHeader('Accept','application/json');xhr.setRequestHeader('X-Play-Ctx',ctx);try{xhr.send();}catch(e4){return 'ERR_XHR_SEND';}if(xhr.status!==200){return 'ERR_HTTP_'+xhr.status+(xhr.status===403?'_f'+fr+'_a'+(Math.round(performance.now()/100)/10):'');}var r=null;try{r=JSON.parse(xhr.responseText);}catch(e5){return 'ERR_BAD_JSON_'+xhr.responseText.substring(0,120);}var u2=(r&&r.data&&r.data.url)?String(r.data.url):'';if(u2.indexOf('http')===0){return u2;}return 'ERR_RESOLVE_'+xhr.responseText.substring(0,120);}catch(e){return 'ERR_JS_'+String(e&&e.message?e.message:e);}})()"
+        }
+      }
+    }
+  ]
+}
