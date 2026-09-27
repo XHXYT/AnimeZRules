@@ -1,11 +1,11 @@
 {
   "version": "1.0.0",
   "author": "user",
-  "update_time": "2025-11-09",
+  "update_time": "2026-09-27",
   "sources": [
     {
       "key": "key_agedmvideo",
-      "version": "1.0.1",
+      "version": "1.0.2",
       "name": "AGE动漫",
       "group": "动漫",
       "baseUrl": "https://www.agedm.io/",
@@ -82,7 +82,7 @@
         },
         "videoUrl": {
           "urlSelector": "iframe#iframeForVideo@src",
-          "iframeSelector": "var video = document.querySelector(\"#artplayer > div > video\");\n            video ? video.src : \"元素未找到或没有src属性\""
+          "iframeSelector": "(function(){\nfunction mediaOk(u){if(typeof u!='string'||u.indexOf('http')!=0)return '';if(u.indexOf('.m3u8')>=0||u.indexOf('.mp4')>=0||u.indexOf('.flv')>=0)return u;return '';}\nfunction perfM3u8(){try{var es=performance.getEntriesByType('resource');for(var i=es.length-1;i>=0;i--){var n=es[i].name;if(n&&n.indexOf('http')==0&&n.indexOf('.m3u8')>=0)return n;}}catch(e){}return '';}\nfunction syncTry(){var f=document.querySelector('iframe#video');var r=mediaOk(f&&f.getAttribute('src'));if(!r){var v=document.querySelector('#artplayer video, video');if(v){r=mediaOk(v.currentSrc||v.src);}}if(!r){r=perfM3u8();}return r;}\nvar R=syncTry();\nif(R){return R;}\nfunction post(u){try{window.animeBridge.onLink(u);}catch(e){}}\nif(!window.__animeHook){\nwindow.__animeHook=1;\ntry{var oo=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u){try{var s=String(u);if(s.indexOf('http')==0&&s.indexOf('.m3u8')>=0){post(s);}}catch(e){}return oo.apply(this,arguments);};}catch(e){}\ntry{var of=window.fetch;window.fetch=function(){try{var a=arguments[0];var s=(typeof a=='string')?a:((a&&a.url)||'');if(s&&s.indexOf('http')==0&&s.indexOf('.m3u8')>=0){post(s);}}catch(e){}return of.apply(this,arguments);};}catch(e){}\nvar iv=setInterval(function(){var r=syncTry();if(r){clearInterval(iv);post(r);return;}if(document.querySelector('#error')){clearInterval(iv);post('ERR_SITE_BADRESP');}},500);\nsetTimeout(function(){clearInterval(iv);},30000);\n}\nreturn 'PENDING';\n})()"
         }
       }
     }
