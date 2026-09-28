@@ -1,90 +1,90 @@
 {
-  "version": "1.0.0",
-  "author": "user",
-  "update_time": "2026-09-27",
-  "sources": [
-    {
-      "key": "key_agedmvideo",
-      "version": "1.0.2",
-      "name": "AGE动漫",
-      "group": "动漫",
-      "baseUrl": "https://www.agedm.io/",
-      "enabled": true,
-      "priority": 1,
-      "defaultSource": true,
-      "parserConfig": {
-        "search": {
-          "videos": {
-            "urlTemplate": "search?query={keyword}",
-            "listSelector": "div.row > div > div",
-            "urlNeedBaseUrl": false,
-            "itemSelectors": {
-              "url": "a@href",
-              "imgUrl": "img@data-original",
-              "title": "img@alt",
-              "episode": "div > div.video_cover > div > span"
-            }
-          }
-        },
-        "homepage": {
-          "banner": {
-            "listSelector": "div.video_list_box.recommend_list > div.video_list_box--bd > div > div",
-            "urlNeedBaseUrl": false,
-            "itemSelectors": {
-              "url": "a@href",
-              "imgUrl": "img@data-original",
-              "title": "a",
-              "episode": "span"
-            }
-          },
-          "category": {
-            "title": "h6",
-            "titles": "div.video_list_box--hd",
-            "moreUrl": "h6 > a@href",
-            "moreUrlNeedBaseUrl": false,
-            "videoLists": "div.video_list_box > div.video_list_box--bd",
-            "videos": {
-              "listSelector": "div.col",
-              "urlNeedBaseUrl": false,
-              "itemSelectors": {
-                "url": "a@href",
-                "imgUrl": "img@data-original",
-                "title": "a",
-                "episode": "span"
-              }
-            }
-          }
-        },
-        "detail": {
-          "titleSelector": "section > div > div.video_detail_right.ps-3.flex-grow-1 > h2",
-          "descSelector": "div.video_detail_right.ps-3.flex-grow-1 > div.video_detail_desc.py-2",
-          "coverSelector": "section > div > div.video_detail_left > div.video_detail_cover > img@data-original",
-          "categorySelector": "div.video_detail_box.detail_baseinfo.my-2 > div > div > div > ul > li:nth-child(9) > span:nth-child(2)",
-          "episodes": {
-            "routeTitlesSelector": "div.video_detail_playlist_wrapper.pt-4 > ul > li",
-            "routeContainersSelector": "div.video_detail_playlist_wrapper.pt-4 > div.tab-content > div",
-            "itemSelector": "ul > li",
-            "itemSelectors": {
-              "url": "a@href",
-              "title": "a"
-            }
-          },
-          "recommends": {
-            "listSelector": "div.video_list_box.video_detail_recommend_wrapper.pt-4 > div.video_list_box--bd > div > div",
-            "urlNeedBaseUrl": false,
-            "itemSelectors": {
-              "url": "a@href",
-              "imgUrl": "img@data-original",
-              "title": "a",
-              "episode": "span"
-            }
-          }
-        },
-        "videoUrl": {
-          "urlSelector": "iframe#iframeForVideo@src",
-          "iframeSelector": "(function(){\nfunction mediaOk(u){if(typeof u!='string'||u.indexOf('http')!=0)return '';if(u.indexOf('.m3u8')>=0||u.indexOf('.mp4')>=0||u.indexOf('.flv')>=0)return u;return '';}\nfunction perfM3u8(){try{var es=performance.getEntriesByType('resource');for(var i=es.length-1;i>=0;i--){var n=es[i].name;if(n&&n.indexOf('http')==0&&n.indexOf('.m3u8')>=0)return n;}}catch(e){}return '';}\nfunction syncTry(){var f=document.querySelector('iframe#video');var r=mediaOk(f&&f.getAttribute('src'));if(!r){var v=document.querySelector('#artplayer video, video');if(v){r=mediaOk(v.currentSrc||v.src);}}if(!r){r=perfM3u8();}return r;}\nvar R=syncTry();\nif(R){return R;}\nfunction post(u){try{window.animeBridge.onLink(u);}catch(e){}}\nif(!window.__animeHook){\nwindow.__animeHook=1;\ntry{var oo=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u){try{var s=String(u);if(s.indexOf('http')==0&&s.indexOf('.m3u8')>=0){post(s);}}catch(e){}return oo.apply(this,arguments);};}catch(e){}\ntry{var of=window.fetch;window.fetch=function(){try{var a=arguments[0];var s=(typeof a=='string')?a:((a&&a.url)||'');if(s&&s.indexOf('http')==0&&s.indexOf('.m3u8')>=0){post(s);}}catch(e){}return of.apply(this,arguments);};}catch(e){}\nvar iv=setInterval(function(){var r=syncTry();if(r){clearInterval(iv);post(r);return;}if(document.querySelector('#error')){clearInterval(iv);post('ERR_SITE_BADRESP');}},500);\nsetTimeout(function(){clearInterval(iv);},30000);\n}\nreturn 'PENDING';\n})()"
-        }
-      }
-    }
-  ]
+    "version":  "1.0.0",
+    "author":  "user",
+    "update_time":  "2026-09-28",
+    "sources":  [
+                    {
+                        "key":  "key_agedmvideo",
+                        "version":  "1.0.4",
+                        "name":  "AGE动漫",
+                        "group":  "动漫",
+                        "baseUrl":  "https://www.agedm.io/",
+                        "enabled":  true,
+                        "priority":  1,
+                        "defaultSource":  true,
+                        "parserConfig":  {
+                                             "search":  {
+                                                            "videos":  {
+                                                                           "urlTemplate":  "search?query={keyword}",
+                                                                           "listSelector":  "div.row \u003e div \u003e div",
+                                                                           "urlNeedBaseUrl":  false,
+                                                                           "itemSelectors":  {
+                                                                                                 "url":  "a@href",
+                                                                                                 "imgUrl":  "img@data-original",
+                                                                                                 "title":  "img@alt",
+                                                                                                 "episode":  "div \u003e div.video_cover \u003e div \u003e span"
+                                                                                             }
+                                                                       }
+                                                        },
+                                             "homepage":  {
+                                                              "banner":  {
+                                                                             "listSelector":  "div.video_list_box.recommend_list \u003e div.video_list_box--bd \u003e div \u003e div",
+                                                                             "urlNeedBaseUrl":  false,
+                                                                             "itemSelectors":  {
+                                                                                                   "url":  "a@href",
+                                                                                                   "imgUrl":  "img@data-original",
+                                                                                                   "title":  "a",
+                                                                                                   "episode":  "span"
+                                                                                               }
+                                                                         },
+                                                              "category":  {
+                                                                               "title":  "h6",
+                                                                               "titles":  "div.video_list_box--hd",
+                                                                               "moreUrl":  "h6 \u003e a@href",
+                                                                               "moreUrlNeedBaseUrl":  false,
+                                                                               "videoLists":  "div.video_list_box \u003e div.video_list_box--bd",
+                                                                               "videos":  {
+                                                                                              "listSelector":  "div.col",
+                                                                                              "urlNeedBaseUrl":  false,
+                                                                                              "itemSelectors":  {
+                                                                                                                    "url":  "a@href",
+                                                                                                                    "imgUrl":  "img@data-original",
+                                                                                                                    "title":  "a",
+                                                                                                                    "episode":  "span"
+                                                                                                                }
+                                                                                          }
+                                                                           }
+                                                          },
+                                             "detail":  {
+                                                            "titleSelector":  "section \u003e div \u003e div.video_detail_right.ps-3.flex-grow-1 \u003e h2",
+                                                            "descSelector":  "div.video_detail_right.ps-3.flex-grow-1 \u003e div.video_detail_desc.py-2",
+                                                            "coverSelector":  "section \u003e div \u003e div.video_detail_left \u003e div.video_detail_cover \u003e img@data-original",
+                                                            "categorySelector":  "div.video_detail_box.detail_baseinfo.my-2 \u003e div \u003e div \u003e div \u003e ul \u003e li:nth-child(9) \u003e span:nth-child(2)",
+                                                            "episodes":  {
+                                                                             "routeTitlesSelector":  "div.video_detail_playlist_wrapper.pt-4 \u003e ul \u003e li",
+                                                                             "routeContainersSelector":  "div.video_detail_playlist_wrapper.pt-4 \u003e div.tab-content \u003e div",
+                                                                             "itemSelector":  "ul \u003e li",
+                                                                             "itemSelectors":  {
+                                                                                                   "url":  "a@href",
+                                                                                                   "title":  "a"
+                                                                                               }
+                                                                         },
+                                                            "recommends":  {
+                                                                               "listSelector":  "div.video_list_box.video_detail_recommend_wrapper.pt-4 \u003e div.video_list_box--bd \u003e div \u003e div",
+                                                                               "urlNeedBaseUrl":  false,
+                                                                               "itemSelectors":  {
+                                                                                                     "url":  "a@href",
+                                                                                                     "imgUrl":  "img@data-original",
+                                                                                                     "title":  "a",
+                                                                                                     "episode":  "span"
+                                                                                                 }
+                                                                           }
+                                                        },
+                                             "videoUrl":  {
+                                                              "urlSelector":  "iframe#iframeForVideo@src",
+                                                              "iframeSelector":  "(function(){\nfunction mediaOk(u){if(typeof u!=\u0027string\u0027||u.indexOf(\u0027http\u0027)!=0)return \u0027\u0027;if(u.indexOf(\u0027.m3u8\u0027)\u003e=0||u.indexOf(\u0027.mp4\u0027)\u003e=0||u.indexOf(\u0027.flv\u0027)\u003e=0)return u;return \u0027\u0027;}\nfunction urlOk(u){if(typeof u!=\u0027string\u0027)return \u0027\u0027;if(u.indexOf(\u0027https://\u0027)==0||u.indexOf(\u0027http://\u0027)==0)return u;return \u0027\u0027;}\nfunction decryptOk(u){var r=urlOk(u);if(!r)return \u0027\u0027;if(r.indexOf(\u0027.html\u0027)\u003e0||r.indexOf(\u0027.php\u0027)\u003e0||r.indexOf(\u0027.shtm\u0027)\u003e0)return \u0027\u0027;try{if(location.origin\u0026\u0026r.indexOf(location.origin)===0)return \u0027\u0027;}catch(e){}return r;}\nfunction perfM3u8(){try{var es=performance.getEntriesByType(\u0027resource\u0027);for(var i=es.length-1;i\u003e=0;i--){var n=es[i].name;if(n\u0026\u0026n.indexOf(\u0027http\u0027)==0\u0026\u0026n.indexOf(\u0027.m3u8\u0027)\u003e=0)return n;}}catch(e){}return \u0027\u0027;}\nfunction artTry(){try{\nvar A=window.Artplayer||window.ArtPlayer;\nif(A\u0026\u0026A.instances\u0026\u0026A.instances.length){\nfor(var i=0;i\u003cA.instances.length;i++){\nvar a=A.instances[i];\nvar u1=(a\u0026\u0026a.option\u0026\u0026typeof a.option.url==\u0027string\u0027)?a.option.url:\u0027\u0027;\nvar u2=(a\u0026\u0026a.hls\u0026\u0026typeof a.hls.url==\u0027string\u0027)?a.hls.url:\u0027\u0027;\nvar r=urlOk(u1)||urlOk(u2);\nif(r)return r;\n}}\n}catch(e){}return \u0027\u0027;}\nfunction syncTry(){var f=document.querySelector(\u0027iframe#video\u0027);var r=mediaOk(f\u0026\u0026f.getAttribute(\u0027src\u0027));if(!r){var v=document.querySelector(\u0027#artplayer video, video\u0027);if(v){r=urlOk(v.currentSrc||v.src);}}if(!r){r=artTry();}if(!r){r=perfM3u8();}return r;}\nfunction wrapHxm(){\ntry{\nif(window.hxm_decrypt\u0026\u0026!window.__animeHxm){\nwindow.__animeHxm=1;\nvar od=window.hxm_decrypt;\nwindow.hxm_decrypt=function(x){\nvar res=od(x);\ntry{var d=res;try{d=decodeURIComponent(String(res));}catch(e2){}var m=decryptOk(d)||decryptOk(String(res))||mediaOk(String(res));if(m)post(m);}catch(e){}\nreturn res;\n};\nreturn true;\n}\n}catch(e){}\nreturn false;\n}\nfunction post(u){try{window.animeBridge.onLink(u);}catch(e){}}\nvar R=syncTry();\nif(R){return R;}\nif(!window.__animeHook){\nwindow.__animeHook=1;\ntry{var oo=XMLHttpRequest.prototype.open;XMLHttpRequest.prototype.open=function(m,u){try{var s=String(u);if(s.indexOf(\u0027http\u0027)==0\u0026\u0026s.indexOf(\u0027.m3u8\u0027)\u003e=0){post(s);}}catch(e){}return oo.apply(this,arguments);};}catch(e){}\ntry{var of=window.fetch;window.fetch=function(){try{var a=arguments[0];var s=(typeof a==\u0027string\u0027)?a:((a\u0026\u0026a.url)||\u0027\u0027);if(s\u0026\u0026s.indexOf(\u0027http\u0027)==0\u0026\u0026s.indexOf(\u0027.m3u8\u0027)\u003e=0){post(s);}}catch(e){}return of.apply(this,arguments);};}catch(e){}\nif(!wrapHxm()){var hv=setInterval(function(){if(wrapHxm()){clearInterval(hv);}},400);setTimeout(function(){clearInterval(hv);},15000);}\nsetTimeout(function(){\ntry{\nif(window.__animeRedrive)return;\nvar A=window.Artplayer||window.ArtPlayer;\nif(A\u0026\u0026A.instances\u0026\u0026A.instances.length)return;\nif(document.querySelector(\u0027iframe#video\u0027))return;\nif(document.querySelector(\u0027#error\u0027))return;\nif(typeof window.hxm_encrypt==\u0027function\u0027\u0026\u0026typeof window.ajax_api==\u0027function\u0027){\nwindow.__animeRedrive=1;\nwindow.ajax_api();\n}\n}catch(e){}\n},8000);\nvar iv=setInterval(function(){var r=syncTry();if(r){clearInterval(iv);post(r);return;}if(document.querySelector(\u0027#error\u0027)){clearInterval(iv);post(\u0027ERR_SITE_BADRESP\u0027);}},500);\nsetTimeout(function(){clearInterval(iv);},110000);\n}\nreturn \u0027PENDING\u0027;\n})()"
+                                                          }
+                                         }
+                    }
+                ]
 }

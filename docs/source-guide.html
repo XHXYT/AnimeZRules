@@ -616,13 +616,14 @@ play_from          → 顶层数组字段</code></pre>
 <p>约定：</p>
 <ul>
   <li>JS 返回 <code>http(s)://</code> 开头的字符串视为成功；返回 <code>ERR_</code> 前缀的字符串视为失败并提示；</li>
-  <li>JS 返回 <code>PENDING</code> 表示"已安装异步钩子"：直链要等页面运行时才产生（如 hls.js/MSE 播放器、运行时解密），JS 先同步检查一轮，找不到就 hook <code>XMLHttpRequest</code>/<code>fetch</code>、轮询 <code>performance</code> 资源记录等，拿到后调用 <code>window.animeBridge.onLink(直链)</code> 异步回传（失败可回传 <code>ERR_</code> 串），引擎会继续等待至超时；</li>
+  <li>JS 返回 <code>PENDING</code> 表示"已安装异步钩子"：直链要等页面运行时才产生（如 hls.js/MSE 播放器、运行时解密），JS 先同步检查一轮，找不到就 hook <code>XMLHttpRequest</code>/<code>fetch</code>、轮询 <code>performance</code> 资源记录、轮询播放器实例（<code>Artplayer.instances[].option.url</code>、<code>video.currentSrc</code>）等，拿到后调用 <code>window.animeBridge.onLink(直链)</code> 异步回传（失败可回传 <code>ERR_</code> 串），引擎会继续等待至超时；</li>
+  <li>回传的直链<strong>不要求带 .m3u8/.mp4 等扩展名</strong>：不少解析站的代理直链是无扩展名地址（形如 <code>https://cdn.xxx.com/8a3f.../video/tos/.../</code>）。只要能确认是播放源（播放器实例的 url、<code>&lt;video&gt;</code> 的 http src），直接回传即可；但 <code>iframe</code> 嵌套的第三方播放器页地址仍需人工甄别，不要当直链回传；</li>
   <li>JS 中<strong>严禁出现 <code>_|_</code> 子串</strong>（它被用作地址与 JS 的内部分隔符）；</li>
   <li>JS 里可以用 <code>XMLHttpRequest</code> 同步请求站点接口、读取 <code>document</code> / <code>location</code>，等于在站点自己的页面环境里写"半自动解析脚本"。</li>
 </ul>
 <p>复杂示例可参考仓库规则列表中使用 WebView JS 解析的现成源：页面加载后从内嵌数据中找剧集 ID，计算校验头，请求解析接口取直链。</p>
 <p>除 JS 通道外，引擎还内置<strong>网络层 m3u8 嗅探</strong>（零配置，自动生效）：解析用 WebView 的所有 https 请求会被旁路监听（不拦截、不影响页面加载），一旦出现 <code>.m3u8</code> 请求，引擎会拉取该地址验证内容（主播放列表直接采用；普通切片流要求总时长达标，过短的疑似贴片广告仅作候补），随后自动交付播放。JS 通道与嗅探通道并行工作，谁先拿到可用地址谁生效。因此对"hls.js 播放、直链只出现在网络请求里"的站点，<code>iframeSelector</code> 只需返回 <code>PENDING</code> 甚至可以省略嗅探逻辑，交给引擎完成。</p>
-<div class="warn">对带真实点击校验（isTrusted）或风控较强的站点，纯 JS 可能无法稳定通过。应用对此类源有兜底策略：自动尝试失败后会弹出 WebView 让用户手动点击辅助播放，配置无需额外处理。</div>
+<div class="warn">对带真实点击校验（isTrusted）或风控较强的站点，纯 JS 可能无法稳定通过。应用对此类源有兜底策略：自动尝试失败后会弹出 WebView 让用户手动点击辅助播放，配置无需额外处理。辅助窗口内置通用捕获（页面 .m3u8 请求、Artplayer 播放器实例、<code>&lt;video&gt;</code> http 直链），多数站点用户只需点一下站内播放按钮即可自动完成捕获并关闭窗口。</div>
 
 <h2 id="tutorial">写源实战教程</h2>
 <p>以给一个模板站写 HTML 源为例，整体流程约 30-60 分钟：</p>
