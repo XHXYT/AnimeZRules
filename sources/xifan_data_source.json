@@ -113,9 +113,11 @@
           "descSelector": "{description}",
           "coverSelector": "{cover_url}",
           "categorySelector": "{region}",
-          "directorSelector": "{director}",
           "updateTimeSelector": "{remarks}",
-          "protagonistSelector": "{actors}",
+          "extra": {
+            "director": "{director}",
+            "actors": "{actors}"
+          },
           "episodes": {
             "jsonRouteTitleTemplate": "稀饭新番主线",
             "jsonListPath": "episodes",

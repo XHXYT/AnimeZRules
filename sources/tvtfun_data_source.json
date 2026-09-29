@@ -154,9 +154,11 @@
             }
           },
           "categorySelector": "{area}",
-          "directorSelector": "{director}",
           "updateTimeSelector": "{remarks}",
-          "protagonistSelector": "{actor}",
+          "extra": {
+            "director": "{director}",
+            "actors": "{actor}"
+          },
           "episodes": {
             "jsonRoutesPath": "playSources",
             "jsonRouteTitleTemplate": "{name}",

@@ -368,7 +368,7 @@ play_from          → 顶层数组字段</code></pre>
   <tr><td><code>year</code></td><td>播出年份</td><td>2012</td></tr>
   <tr><td><code>month</code></td><td>播出月份</td><td>04 / 四月</td></tr>
   <tr><td><code>director</code></td><td>导演</td><td>武本康弘,木上益治</td></tr>
-  <tr><td><code>actors</code></td><td>演员</td><td>中村悠一,佐藤聪美</td></tr>
+  <tr><td><code>actors</code></td><td>声优</td><td>中村悠一,佐藤聪美</td></tr>
   <tr><td><code>tags</code></td><td>标签/类型</td><td>悬疑,校园,日常</td></tr>
 </table>
 <div class="note">每个字段都可以用「简单选择器字符串」或「<code>{ selector, postProcess }</code> 复杂配置」两种形态；配合 <code>nth-child(n)</code>/<code>nth-of-type(n)</code> 伪类可取同容器第 n 个元素，配合 <code>:contains(文本)</code> 伪类可按文本内容筛选元素（如 <code>.slide-info.partition:contains(导演)</code> 取行首带「导演」的行——条目行数不固定时比按序号取更稳），配合 postProcess（regex/replace 等表单类型）可清洗文本（如去掉「导演 :」前缀）。多值字段建议保留原始分隔符（如英文逗号），由 UI 自行切分展示。应用内编辑器中这组字段收在「更多字段」开关下，配置任一字段即展开；后处理请优先使用表单类型（字符串替换/正则提取等），pipeline 等高级形态仍可通过「JSON(高级)」编辑。</div>
@@ -445,10 +445,8 @@ play_from          → 顶层数组字段</code></pre>
   "descSelector": ".module-info-introduction-content p",
   "coverSelector": ".module-info-poster img@data-original",
   "categorySelector": ".module-info-tag a",        // 可选：分类
-  "directorSelector": ".module-info-items div a",  // 可选：导演
   "updateTimeSelector": ".module-info-item-content", // 可选：更新时间
-  "protagonistSelector": ".module-info-items a",   // 可选：主演
-  "extra": { ... },          // 可选：扩展字段（见下）
+  "extra": { ... },          // 可选：扩展字段（导演/声优/标签/年月/播放量，见下）
   "episodes": { ... },      // 见下一节
   "recommends": { ... }     // 见推荐一节
 }</code></pre>
@@ -459,17 +457,15 @@ play_from          → 顶层数组字段</code></pre>
   "descSelector": "{description}",
   "coverSelector": "{cover_url}",
   "categorySelector": "{categories}",
-  "directorSelector": "{director}",
   "updateTimeSelector": "{publish_date}",
-  "protagonistSelector": "{actor}",
   "coverPostProcess": { ... },   // 可选：封面地址后处理（ProcessConfig），如改写为图片代理地址
-  "extra": { ... },              // 可选：扩展字段（见下）
+  "extra": { ... },              // 可选：扩展字段（导演/声优/标签/年月/播放量，见下）
   "episodes": { ... },
   "recommends": { ... }
 }</code></pre>
 <p>默认从响应的 <code>data</code> 字段取详情对象；接口直接返回数组或对象本身时用 <code>dataPath</code> 指定（支持点分路径与数组索引，如 PostgREST 数组响应填 <code>0</code>，根对象本身填空串之外的取值均可按需配置）。</p>
 <h3>详情扩展字段 extra（可选）</h3>
-<p><code>extra</code> 的键与「可选扩展字段」一节完全相同（<code>playCount / year / month / director / actors / tags</code>），用于补充/丰富详情信息；HTML 模式值为 CSS 选择器，JSON 模式值为 <code>{ }</code> 模板，同样支持 <code>{ selector, postProcess }</code> 复杂配置。与 <code>directorSelector</code> 等旧字段重叠时以 <code>extra</code> 为准（后写入）：</p>
+<p><code>extra</code> 的键与「可选扩展字段」一节完全相同（<code>playCount / year / month / director / actors / tags</code>，其中 <code>actors</code> 为声优），用于补充/丰富详情信息；详情的导演、声优等信息统一配在这里。HTML 模式值为 CSS 选择器，JSON 模式值为 <code>{ }</code> 模板，同样支持 <code>{ selector, postProcess }</code> 复杂配置。旧版基础字段 <code>directorSelector</code> / <code>protagonistSelector</code> 仅为兼容保留（<code>extra</code> 优先，二者等价），应用内编辑器已不再提供这两个入口，旧源在编辑器中打开时会自动迁移到 <code>extra</code>；新建源请直接使用 <code>extra</code>：</p>
 <pre><code>"extra": {
   "director": { "selector": ".slide-info.hide.partition:contains(导演)",
                 "postProcess": { "type": "string", "stringProcess": { "type": "replace", "search": "^(导演|演员|类型)\\s*:\\s*|\\s*[,，]\\s*$", "replace": "", "flags": "g" } } },
@@ -480,7 +476,7 @@ play_from          → 顶层数组字段</code></pre>
   "month":  { "selector": ".slide-info-remarks:nth-of-type(3)",
               "postProcess": { "type": "string", "stringProcess": { "type": "regex", "pattern": "[一二三四五六七八九十]{1,3}月" } } }
 }</code></pre>
-<div class="note">导演/演员/类型行用 <code>:contains(标签文字)</code> 按行首标签选行，条目缺行（如电影条目没有演员行）时对应字段为空、不会错位到别的行；年月等固定次序的行仍可用 <code>nth-of-type(n)</code>。应用内编辑器中该组字段收在详情页签的「更多字段」开关下，配置任一字段即展开，全部清空后开关关闭并移除 <code>extra</code> 节点。提取结果挂在 VideoDetailInfo 上，与列表阶段的同名扩展字段结构一致。</div>
+<div class="note">导演/声优/类型行用 <code>:contains(标签文字)</code> 按行首标签选行（匹配的是源站行首文字，与应用内字段名无关），条目缺行（如电影条目没有声优行）时对应字段为空、不会错位到别的行；年月等固定次序的行仍可用 <code>nth-of-type(n)</code>。应用内编辑器中该组字段收在详情页签的「更多字段」开关下（播放量/年份/月份/导演/声优/标签），配置任一字段即展开，全部清空后开关关闭并移除 <code>extra</code> 节点。提取结果挂在 VideoDetailInfo 上，与列表阶段的同名扩展字段结构一致；详情页的「声优」节优先显示 <code>actors</code>，旧数据 <code>protagonist</code> 作兜底。</div>
 
 <h2 id="episodes">选集 episodes</h2>
 <h3>HTML 模式：单路线 / 多路线</h3>
@@ -730,9 +726,9 @@ play_from          → 顶层数组字段</code></pre>
 <h3>"详情"Tab → detail</h3>
 <table>
   <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
-  <tr><td>影片详情 / 详情字段模板（8 项）</td><td><code>detail.titleSelector / descSelector / coverSelector / categorySelector / directorSelector / updateTimeSelector / protagonistSelector / dataPath</code></td><td>HTML=CSS 选择器；JSON=模板（如 <code>{title}</code>、<code>{categories}</code>），后 5 项可选；<code>dataPath</code> 为 JSON 专属（详情数据路径，默认 <code>data</code>）</td></tr>
+  <tr><td>影片详情 / 详情字段模板（6 项）</td><td><code>detail.titleSelector / descSelector / coverSelector / categorySelector / updateTimeSelector / dataPath</code></td><td>HTML=CSS 选择器；JSON=模板（如 <code>{title}</code>、<code>{categories}</code>），后 3 项可选；<code>dataPath</code> 为 JSON 专属（详情数据路径，默认 <code>data</code>）；导演/声优等扩展信息走「更多字段」</td></tr>
   <tr><td>封面后处理JSON(可选) <span class="tag">仅JSON</span></td><td><code>detail.coverPostProcess</code></td><td>ProcessConfig JSON 文本，如把封面地址改写为图片代理</td></tr>
-  <tr><td>更多字段（详情页签）</td><td><code>detail.extra</code></td><td>开关 + 扩展字段组（播放量/年份/月份/导演/演员/标签），字段同"可选扩展字段"一节；HTML=CSS 选择器、JSON=模板，支持后处理；全部清空后自动移除该节点</td></tr>
+  <tr><td>更多字段（详情页签）</td><td><code>detail.extra</code></td><td>开关 + 扩展字段组（播放量/年份/月份/导演/声优/标签），字段同"可选扩展字段"一节；HTML=CSS 选择器、JSON=模板，支持后处理；全部清空后自动移除该节点</td></tr>
   <tr><td>剧集配置（HTML 4 项）</td><td><code>episodes.routeTitlesSelector / routeContainersSelector / containerSelector / itemSelector</code></td><td>多路线标题选择器(可选)、多路线剧集选择器(可选)、单路线剧集选择器(仅单路线时必选)、剧集列表选择器</td></tr>
   <tr><td>选集配置(JSON)（4 项）</td><td><code>episodes.jsonRoutesPath / jsonRouteTitleTemplate / jsonSectionsUrlTemplate / jsonListPath</code></td><td>路线数组路径（如 <code>play_from</code>；省略则单路线模式，详情数据自身为唯一路线）、路线标题模板、选集接口地址模板、选集列表JSON路径（默认 <code>data.list</code>）</td></tr>
   <tr><td>单集剧集配置 / 单集字段模板</td><td><code>episodes.itemSelectors</code></td><td>只有 标题、链接 两项；HTML 如 <code>@href</code> + <code>span</code>，JSON 如 <code>{baseUrl}/api/v2/sections/{id}/play-url</code></td></tr>
@@ -871,9 +867,11 @@ play_from          → 顶层数组字段</code></pre>
         "descSelector": "{description}",
         "coverSelector": "{cover_url}",
         "categorySelector": "{categories}",
-        "directorSelector": "{director}",
         "updateTimeSelector": "{publish_date}",
-        "protagonistSelector": "{actor}",
+        "extra": {
+          "director": "{director}",
+          "actors": "{actor}"
+        },
         "episodes": {
           "jsonRoutesPath": "play_from",
           "jsonRouteTitleTemplate": "{title}",

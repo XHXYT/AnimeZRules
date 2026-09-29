@@ -126,9 +126,11 @@
           "descSelector": "{description}",
           "coverSelector": "{cover_url}",
           "categorySelector": "{categories}",
-          "directorSelector": "{director}",
           "updateTimeSelector": "{publish_date}",
-          "protagonistSelector": "{actor}",
+          "extra": {
+            "director": "{director}",
+            "actors": "{actor}"
+          },
           "episodes": {
             "jsonRoutesPath": "play_from",
             "jsonRouteTitleTemplate": "{title}",

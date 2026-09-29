@@ -62,8 +62,8 @@ description: 为 AnimeZ（HarmonyOS 追番应用）编写、适配、调试视�
 - [ ] `pattern: "regex"` 的 `urlSelector`：捕获组 1 = 播放地址；注意 JSON 字符串转义（`\\`）
 - [ ] 相对 URL 交给引擎补全（`urlNeedBaseUrl` 默认开），不要手工拼 `baseUrl`（模板里可用 `{baseUrl}`）
 - [ ] 旧版字符串 postProcess 仅 `substringBetween('a','b')` / `replaceAll('old','new')` / `base64Decode()` / `decodeUri()` 四种（可组合，如 `base64Decode();decodeUri()`）；复杂处理用对象形态（6 种 ProcessConfig + 4 种 StringProcessConfig，见指南"字段后处理"）
-- [ ] itemSelectors 除 url/imgUrl/title/episode 外支持可选字段键 `playCount` / `year` / `month` / `director` / `actors` / `tags`（挂在 VideoInfo 上，源里有什么配什么）；htmlsoup 支持 `nth-child(n)` / `nth-of-type(n)` 伪类取同容器第 n 个元素，也支持 `:contains(文本)` 按文本筛选（行数不固定的信息行优先用它，如 `.slide-info.partition:contains(导演)`，避免缺行时错位）
-- [ ] 详情同样支持这组扩展字段：`detail.extra`（HTML=CSS 选择器 / JSON=模板，支持后处理；与 directorSelector 等旧字段重叠时 extra 优先），编辑器里收在详情页签「更多字段」开关下
+- [ ] itemSelectors 除 url/imgUrl/title/episode 外支持可选字段键 `playCount` / `year` / `month` / `director` / `actors` / `tags`（挂在 VideoInfo 上，源里有什么配什么；`actors` 在应用内显示为「声优」）；htmlsoup 支持 `nth-child(n)` / `nth-of-type(n)` 伪类取同容器第 n 个元素，也支持 `:contains(文本)` 按文本筛选（行数不固定的信息行优先用它，如 `.slide-info.partition:contains(导演)`，避免缺行时错位）
+- [ ] 详情的导演/声优等扩展信息统一配在 `detail.extra`（HTML=CSS 选择器 / JSON=模板，键同上，支持后处理），编辑器里收在详情页签「更多字段」开关下；旧基础字段 `directorSelector` / `protagonistSelector` 仅为兼容保留（extra 优先），新源不要再使用
 - [ ] 搜索需图片验证码的站（MacCMS dsn2 模板常见）：在 `search` 下加 `captcha` 配置（detectSelector / imageUrlSelector / verifyUrlTemplate / successContains），验证码弹窗由搜索页自动弹出，前提是站点验证流程为「图片 + 提交校验 + 会话 Cookie 重放」
 - [ ] 最终文件必须能通过 `JSON.parse`（无注释、无尾逗号、UTF-8 无 BOM）
 
