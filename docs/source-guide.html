@@ -186,6 +186,7 @@
   <a href="#episodes">选集 episodes</a>
   <a href="#recommends">推荐 recommends</a>
   <a href="#videourl">播放地址 videoUrl</a>
+<a href="#schedule">周表 schedule</a>
   <div class="group-label">进阶</div>
   <a href="#postprocess">字段后处理</a>
   <a href="#webview-js">WebView JS 解析</a>
@@ -279,9 +280,10 @@
   "search":   { "videos": VideoConfig },
   "homepage": { "banner": VideoConfig, "category": CategoryConfig },
   "detail":   DetailConfig,
-  "videoUrl": VideoUrlConfig
+  "videoUrl": VideoUrlConfig,
+  "schedule": ScheduleConfig          // 可选：周表（配置后成为设置"周表数据源"候选）
 }</code></pre>
-<p>其中 <code>search</code>、<code>homepage</code>、<code>detail</code>、<code>videoUrl</code> 分别对应应用内的四个功能环节：搜索 → 首页浏览 → 详情页 → 播放。</p>
+<p>其中 <code>search</code>、<code>homepage</code>、<code>detail</code>、<code>videoUrl</code> 分别对应应用内的四个功能环节：搜索 → 首页浏览 → 详情页 → 播放；<code>schedule</code> 为可选的周表能力（主页旁的"周表"Tab）。</p>
 
 <h2 id="selector-syntax">选择器语法（HTML 模式）</h2>
 <p>HTML 模式的核心语法：<strong>CSS 选择器 + <code>@</code> 属性</strong>。</p>
@@ -437,6 +439,36 @@ play_from          → 顶层数组字段</code></pre>
 }</code></pre>
 <div class="note">HTML 模式的"更多"分页页同样用 <code>videos</code>（含 <code>containerSelector</code>）解析整页文档；卡片 <code>moreUrl</code> 支持 <code>{page}</code> 占位符（如 <code>/show/2--------{page}---/</code>），未使用占位符时沿用旧行为（页码直接拼在地址末尾）。卡片请求失败或解析为空时引擎自动重试一次（间隔 300ms），避免站点偶发限流导致卡片空白。</div>
 
+<h2 id="schedule">周表 schedule</h2>
+<p>可选节点。配置后该源成为设置页 <strong>"周表数据源"</strong> 的候选；用户在 设置 → 周表数据源 中选定后，应用主页旁的"周表"Tab 按星期（周一~周日）展示该源的番剧更新列表。未选择周表源（或所选源被删除/停用）时周表页显示空态引导。结构与列表卡片同构，唯一的新概念是地址模板中的 <code>{weekday}</code> 占位符（1=周一 … 7=周日，切换星期时替换后重新请求）：</p>
+<pre><code>"schedule": {
+  "urlTemplate": "/api/index/weekday?weekday={weekday}",   // {weekday} 为星期占位符，相对路径拼 baseUrl
+  "listSelector": "data.list.0.videos",                    // HTML=条目 CSS 选择器 / JSON=列表 JSON 路径
+  "urlNeedBaseUrl": false,
+  "enabledHttps": true,
+  "itemSelectors": { "title": "{title}", "url": "{baseUrl}/api/videos/{video_id}", "imgUrl": "{cover_url}", "episode": "{remarks}" }
+}</code></pre>
+<table>
+  <tr><th>字段</th><th>说明</th></tr>
+  <tr><td><code>urlTemplate</code></td><td>周表数据地址模板；<code>{weekday}</code> 会被替换为 1-7（周一=1），<code>{weekday0}</code> 替换为 0-6（周一=0，适配 0 起始的星期字段/接口，如稀饭的 <code>update_weekday</code>）。相对路径自动拼 <code>baseUrl</code>，也可填绝对地址</td></tr>
+  <tr><td><code>listSelector</code></td><td>HTML 模式=条目 CSS 选择器；JSON 模式=当天列表在响应中的 JSON 路径（如 <code>data.list.0.videos</code>），<strong>可留空</strong>（空=响应根数组）</td></tr>
+  <tr><td><code>weekdayBlocksSelector</code> <span class="tag opt">可选 仅HTML</span></td><td><strong>首页多区块形态</strong>：一周各天分区在同一页面时，填所有星期区块的容器选择器（如 <code>.anime-schedule</code>）。引擎按区块标题文本（"星期三/周三/水曜日/Wednesday"）定位对应星期的区块，再在其中用 <code>listSelector</code> 提取条目；区块顺序无关（"今天在前"轮转也能正确匹配），找不到对应区块视为当天无更新</td></tr>
+  <tr><td><code>weekdayTitleSelector</code> <span class="tag opt">可选 仅HTML</span></td><td>每个区块内标识星期的标题元素选择器（如 <code>h4</code>），与 <code>weekdayBlocksSelector</code> 配套使用</td></tr>
+  <tr><td><code>itemSelectors</code></td><td>字段选择器/模板，与搜索结果、分类卡片完全相同（url/imgUrl/title/episode + 扩展字段）</td></tr>
+  <tr><td><code>urlNeedBaseUrl</code> / <code>enabledHttps</code></td><td>同 VideoConfig：条目 url 相对路径拼接、http 升级 https</td></tr>
+</table>
+<p>首页多区块形态示例（饭团动漫：首页 7 个"星期X"区块即周表数据）：</p>
+<pre><code>"schedule": {
+  "urlTemplate": "/",                          // 首页本身
+  "weekdayBlocksSelector": ".anime-schedule",  // 所有星期区块
+  "weekdayTitleSelector": "h4",                // 区块标题（星期一~星期日）
+  "listSelector": ".anime-card",               // 区块内条目
+  "urlNeedBaseUrl": true,
+  "enabledHttps": true,
+  "itemSelectors": { "url": "a.stretched-link@href", "imgUrl": "img.anime-cover@data-src", "title": "a.stretched-link", "episode": ".anime-update-info p" }
+}</code></pre>
+<div class="note">周表按天懒加载并缓存：切到某天才请求当天接口，再次切换直接用缓存。周表源独立于首页数据源，在 设置 → 周表数据源 中选择；站点若提供"不带星期参数返回全周"的接口，也请逐天配置（按天请求语义更明确）。JSON 源的 <code>urlTemplate</code> 可直接带站点过滤参数——如稀饭 <code>is_finished=eq.false</code> 只取连载中的新番，否则会把历史上所有星期几更新的老番都列出来。</div>
+
 <h2 id="detail">详情 detail</h2>
 <p>进入详情页后，引擎请求 <code>url</code>（列表阶段取到的地址）并解析以下字段。</p>
 <p><strong>HTML 模式</strong>——全部是选择器：</p>
@@ -561,7 +593,7 @@ play_from          → 顶层数组字段</code></pre>
 }</code></pre>
 <p>json 模式示例（接口站）：</p>
 <pre><code>"videoUrl": { "pattern": "json", "valuePath": "data.url" }</code></pre>
-<p>三种请求型 pattern 均支持旧版字符串 <code>postProcess</code>，共四种（可按顺序组合，用 <code>;</code> 分隔）：<code>"substringBetween('start','end')"</code>、<code>"replaceAll('old','new')"</code>、<code>"base64Decode()"</code>（Base64 解码，UTF-8）、<code>"decodeUri()"</code>（URL 解码）。典型组合——MacCMS 播放地址 <code>player_aaaa</code> 的 <code>encrypt=2</code> 加密：<code>"base64Decode();decodeUri()"</code>。</p>
+<p>三种请求型 pattern 均支持旧版字符串 <code>postProcess</code>，共五种（按固定顺序生效）：<code>"substringBetween('start','end')"</code>、<code>"replaceAll('old','new')"</code>、<code>"base64Decode()"</code>（Base64 解码，UTF-8）、<code>"decodeUri()"</code>（URL 解码）、<code>"jsonDecode()"</code>（JSON 字符串解码，正确处理 <code>\/</code> 与 <code>\uXXXX</code> 中文转义——播放地址里含中文路径时用它，别用 replaceAll 删反斜杠）。典型组合——MacCMS 播放地址 <code>player_aaaa</code> 的 <code>encrypt=2</code> 加密：<code>"base64Decode();decodeUri()"</code>；<code>player_aaaa.url</code> 带转义：<code>"jsonDecode()"</code>。</p>
 <p><code>iframeSelector</code>（可选）：真实地址需要执行页面 JS 才能拿到时，填一段 JS，引擎会改用内置 WebView 加载播放页并注入执行，详见<a href="#webview-js">WebView JS 解析</a>。注意其生效前提是 pattern 解析出的地址是一个<strong>网页</strong>而非直链：JSON 源请配合 <code>"pattern": "link"</code>；HTML 源请让 <code>urlSelector</code> 提取播放器页地址（如 <code>iframe@src</code>）。</p>
 
 <h2 id="postprocess">字段后处理</h2>
@@ -661,7 +693,8 @@ play_from          → 顶层数组字段</code></pre>
 </table>
 <p>编辑页顶部工具栏：</p>
 <ul>
-  <li><strong>启用</strong>（对应 <code>enabled</code>）、<strong>首页</strong>（对应 <code>defaultSource</code>，勾选后该源成为应用启动时的首页数据源）与<strong>源模式</strong>（HTML / JSON，对应 <code>sourceType</code>）。切换源模式后，下面各 Tab 输入框的标题和提示文案会随之切换（CSS 选择器 ↔ JSON 模板），不确定怎么填时先切换模式看提示；</li>
+  <li>第一行：<strong>启用</strong>（对应 <code>enabled</code>）与<strong>源模式</strong>（HTML / JSON，对应 <code>sourceType</code>）。切换源模式后，下面各 Tab 输入框的标题和提示文案会随之切换（CSS 选择器 ↔ JSON 模板），不确定怎么填时先切换模式看提示；</li>
+  <li>第二行：<strong>首页</strong>（对应 <code>defaultSource</code>，勾选后该源成为应用启动时的首页数据源）与<strong>周表</strong>（勾选后该源立即成为周表 Tab 的数据源，无需保存；取消勾选则清除周表源，可在设置 → 周表数据源 重新选择）；</li>
   <li><strong>保存</strong>：至少填写 <code>Key</code> 和<strong>名称</strong>才能保存；<strong>保存后立即生效，无需重新导入</strong>；</li>
   <li>有未保存修改时返回会弹出"确认退出"提醒。</li>
 </ul>
@@ -721,6 +754,16 @@ play_from          → 顶层数组字段</code></pre>
   <tr><td>更多链接拼接URL / 视频拼接基础URL / 启用HTTPS（复选框）<span class="tag">仅HTML</span></td><td><code>category.moreUrlNeedBaseUrl</code> / <code>category.videos.urlNeedBaseUrl</code> / <code>category.videos.enabledHttps</code></td><td>更多链接与板块视频链接是否拼接基础URL、http 升级 https（"更多"分页页同样生效）</td></tr>
   <tr><td>板块视频列表选择器 / 板块视频容器选择器(可选) <span class="tag">仅HTML</span></td><td><code>category.videos.listSelector</code> / <code>category.videos.containerSelector</code></td><td>板块内单个条目的选择器；容器选择器用于"更多"页等整页文档（先定位容器再找条目）</td></tr>
   <tr><td>分类视频配置 <span class="tag">仅HTML</span></td><td><code>category.videos.itemSelectors</code></td><td>板块内条目的字段配置</td></tr>
+</table>
+
+<h3>"周表"Tab → schedule</h3>
+<table>
+  <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
+  <tr><td>拼接基础URL / 启用HTTPS（复选框）</td><td><code>schedule.urlNeedBaseUrl</code> / <code>schedule.enabledHttps</code></td><td>条目链接为相对路径时勾选拼接；http:// 升级 https://（编辑时自动创建 <code>schedule</code> 节点）</td></tr>
+  <tr><td>地址模板</td><td><code>schedule.urlTemplate</code></td><td><code>{weekday}</code> 为星期占位符（1=周一..7=周日），相对路径拼基础URL，如 <code>/api/index/weekday?weekday={weekday}</code></td></tr>
+  <tr><td>列表选择器 / 列表JSON路径</td><td><code>schedule.listSelector</code></td><td>HTML=条目 CSS 选择器；JSON=当天列表路径如 <code>data.list.0.videos</code></td></tr>
+  <tr><td>星期区块选择器 / 星期标题选择器(可选) <span class="tag">仅HTML</span></td><td><code>schedule.weekdayBlocksSelector</code> / <code>schedule.weekdayTitleSelector</code></td><td>首页多区块形态：所有星期区块容器 + 区块内星期标题元素（如 <code>.anime-schedule</code> + <code>h4</code>），按标题文本定位当天区块</td></tr>
+  <tr><td>周表视频配置 / 周表字段模板</td><td><code>schedule.itemSelectors</code></td><td>字段同"搜索结果配置"（番剧名/封面链接/番剧链接/剧集数 + 扩展字段）</td></tr>
 </table>
 
 <h3>"详情"Tab → detail</h3>

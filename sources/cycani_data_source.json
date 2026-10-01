@@ -158,8 +158,21 @@
         "videoUrl": {
           "pattern": "json",
           "valuePath": "data.url"
+        },
+        "schedule": {
+          "urlTemplate": "/api/index/weekday?weekday={weekday}",
+          "listSelector": "data.list.0.videos",
+          "itemSelectors": {
+            "title": "{title}",
+            "url": "{baseUrl}/api/videos/{video_id}",
+            "imgUrl": "{cover_url}",
+            "episode": "{remarks}"
+          },
+          "urlNeedBaseUrl": false,
+          "enabledHttps": true
         }
-      }
+      },
+      "update_time": "2026-09-30"
     }
   ]
 }

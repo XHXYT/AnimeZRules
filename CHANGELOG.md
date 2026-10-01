@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-30
+
+- 播放地址旧版字符串后处理新增 `jsonDecode()`：按 JSON 字符串解码 `\/` 与 `\uXXXX` 转义
+- 新增周表（schedule）能力：`parserConfig.schedule` 可选节点，`{weekday}` 占位符（1=周一..7=周日），结构同列表卡片
+- 周表支持"首页多区块"形态（仅 HTML）：`weekdayBlocksSelector` + `weekdayTitleSelector` 按区块标题文本（星期X/周X/日语曜日/英文星期）定位当天区块，适配"一周各天分区在同一页面"的站点（区块顺序轮转无关）
+
 ## 2026-09-29
 
 - 详情扩展字段 `actors` 在应用内更名为「声优」（键名不变，与旧"角色声优"合并为一个字段）

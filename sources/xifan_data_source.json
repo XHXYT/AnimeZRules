@@ -1,7 +1,7 @@
 {
   "version": "1.0.1",
   "author": "user",
-  "update_time": "2026-09-25",
+  "update_time": "2026-09-30",
   "sources": [
     {
       "key": "key_xifan",
@@ -11,7 +11,7 @@
       "version": "1.0.1",
       "enabled": true,
       "priority": 16,
-      "description": "稀饭动漫 next.xifanacg.com（Supabase PostgREST JSON 源；播放地址通过隐藏 WebView 在站点播放页内解析，需设备网络可正常访问站点）",
+      "description": "稀饭动漫 next.xifanacg.com（Supabase PostgREST JSON 源；播放地址通过隐藏 WebView 在站点播放页内解析，需设备网络可正常访问站点） + 周表（update_weekday 直连查询）",
       "defaultSource": false,
       "parserConfig": {
         "sourceType": "json",
@@ -149,8 +149,21 @@
         "videoUrl": {
           "pattern": "link",
           "iframeSelector": "(function(){try{var m=location.pathname.match(/\\/play\\/(\\d+)/);if(!m){return 'ERR_NO_EP';}var epId=parseInt(m[1],10);var t='';try{var a=self.__next_f||[];for(var i=0;i<a.length;i++){if(a[i]&&a[i][1]){t+=a[i][1];}}}catch(e0){}var sid=4;var sm=t.match(/initialSourceId\\\\?\":(\\d+)/);if(sm){sid=parseInt(sm[1],10);}var key='sb_publishable_OBIVAWACIX6lPXrO98_z24_HcsmalkA';var xhr=new XMLHttpRequest();xhr.open('POST','https://api.xifanacg.com/functions/v1/issue-web-playback',false);xhr.setRequestHeader('Content-Type','application/json');xhr.setRequestHeader('apikey',key);xhr.setRequestHeader('Authorization','Bearer '+key);xhr.send(JSON.stringify({action:'fallback',episode_id:epId,source_id:sid}));if(xhr.status!==200){return 'ERR_HTTP_'+xhr.status;}var r=null;try{r=JSON.parse(xhr.responseText);}catch(e1){return 'ERR_BAD_JSON';}var u=(r&&r.url)?String(r.url):'';if(u.indexOf('http')===0){return u;}return 'ERR_NO_URL_'+((r&&r.error)?r.error:'parse');}catch(e){return 'ERR_EXC';}})()"
+        },
+        "schedule": {
+          "urlTemplate": "/rest/v1/animes?is_published=eq.true&is_finished=eq.false&update_weekday=eq.{weekday0}&order=view_count.desc&limit=100&select=id,title,cover_url,release_year,remarks",
+          "listSelector": "",
+          "urlNeedBaseUrl": false,
+          "enabledHttps": true,
+          "itemSelectors": {
+            "title": "{title}",
+            "url": "https://api.xifanacg.com/rest/v1/animes?id=eq.{id}&select=id,title,cover_url,description,director,actors,release_year,is_finished,meta_tags,region,remarks,current_episodes,total_episodes,updated_at,format,episodes(anime_id,id,episode_number,title)&episodes.order=episode_number.asc&episodes.kind=eq.main",
+            "imgUrl": "{cover_url}",
+            "episode": "{remarks}"
+          }
         }
-      }
+      },
+      "update_time": "2026-09-30"
     }
   ]
 }
