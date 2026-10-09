@@ -1,0 +1,135 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-10-04",
+  "sources": [
+    {
+      "key": "key_moonci",
+      "version": "1.0.0",
+      "name": "月之祠",
+      "group": "动漫",
+      "baseUrl": "https://www.moonci.com",
+      "enabled": true,
+      "priority": 21,
+      "description": "月之祠 - 二次元爱好者的纯净追番圣地 www.moonci.com",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/search/-------------.html?wd={keyword}",
+            "listSelector": "li.hl-list-item",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": ".hl-item-title a@href",
+              "imgUrl": "a.hl-item-thumb@data-original",
+              "title": ".hl-item-title a",
+              "episode": ".hl-pic-text .remarks"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "",
+            "listSelector": "li.hl-br-item a.hl-br-thumb",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "@href",
+              "imgUrl": "@data-original",
+              "title": "@title",
+              "episode": "div.hl-br-type"
+            }
+          },
+          "category": {
+            "title": "",
+            "titles": "",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "li.hl-list-item",
+              "containerSelector": "ul.hl-vod-list",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": "a.hl-item-thumb@href",
+                "imgUrl": "a.hl-item-thumb@data-original",
+                "title": ".hl-item-title a",
+                "episode": ".hl-pic-text .remarks"
+              }
+            },
+            "cards": [
+              {
+                "title": "新番",
+                "url": "/type/20.html",
+                "moreUrl": "/type/20/page/{page}.html",
+                "listSelector": "li.hl-list-item",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "a.hl-item-thumb@href",
+                  "imgUrl": "a.hl-item-thumb@data-original",
+                  "title": ".hl-item-title a",
+                  "episode": ".hl-pic-text .remarks"
+                }
+              },
+              {
+                "title": "番剧",
+                "url": "/type/21.html",
+                "moreUrl": "/type/21/page/{page}.html",
+                "listSelector": "li.hl-list-item",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "a.hl-item-thumb@href",
+                  "imgUrl": "a.hl-item-thumb@data-original",
+                  "title": ".hl-item-title a",
+                  "episode": ".hl-pic-text .remarks"
+                }
+              },
+              {
+                "title": "剧场",
+                "url": "/type/22.html",
+                "moreUrl": "/type/22/page/{page}.html",
+                "listSelector": "li.hl-list-item",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "a.hl-item-thumb@href",
+                  "imgUrl": "a.hl-item-thumb@data-original",
+                  "title": ".hl-item-title a",
+                  "episode": ".hl-pic-text .remarks"
+                }
+              }
+            ]
+          }
+        },
+        "detail": {
+          "titleSelector": "h2.hl-dc-title",
+          "descSelector": "li.blurb",
+          "coverSelector": ".hl-dc-pic .hl-item-thumb@data-original",
+          "episodes": {
+            "routeTitlesSelector": ".hl-plays-from a",
+            "routeContainersSelector": "ul.hl-plays-list",
+            "itemSelector": "li",
+            "itemSelectors": {
+              "url": "a@href",
+              "title": "a"
+            }
+          },
+          "recommends": {"listSelector":"div.hl-rb-relvod li.hl-list-item","urlNeedBaseUrl":true,"enabledHttps":true,"itemSelectors":{"url":".hl-item-title a@href","imgUrl":"a.hl-item-thumb@data-original","title":".hl-item-title a","episode":".hl-pic-text .remarks"}}
+        },
+        "videoUrl": {
+          "pattern": "regex",
+          "urlSelector": "\"url\":\"([^\"]*)\",\"url_next\"",
+          "postProcess": "decodeUri()"
+        }
+      }
+    }
+  ]
+}

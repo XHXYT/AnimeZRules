@@ -1,0 +1,177 @@
+{
+  "version": "1.1.0",
+  "author": "user",
+  "update_time": "2026-10-10",
+  "sources": [
+    {
+      "key": "key_milimili",
+      "version": "1.1.0",
+      "name": "MiliMili",
+      "group": "动漫",
+      "baseUrl": "https://milimili.moe",
+      "enabled": true,
+      "priority": 31,
+      "description": "MiliMili 免费动漫在线观看网站 milimili.moe（播放需账号登录：源列表长按卡片-账号登录）",
+      "defaultSource": false,
+      "login": {
+        "type": "cookie",
+        "loginUrl": "/milimili.platform.v1.PlatformService/Login",
+        "usernameField": "handle",
+        "passwordField": "password",
+        "extraBody": {
+          "keepLoggedIn": true
+        },
+        "authHeaderName": "Cookie",
+        "authValueTemplate": "{token}"
+      },
+      "parserConfig": {
+        "sourceType": "json",
+        "requestHeaders": {
+          "Accept": "application/json",
+          "Connect-Protocol-Version": "1"
+        },
+        "search": {
+          "videos": {
+            "urlTemplate": "/milimili.platform.v1.PlatformService/SearchVideos",
+            "method": "POST",
+            "body": "{\"query\":\"{keyword}\",\"limit\":50,\"sectionSlug\":\"anime\",\"contentType\":\"pgc\"}",
+            "listSelector": "videos",
+            "urlNeedBaseUrl": false,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "title": "{title}",
+              "url": "{shortId}",
+              "imgUrl": "{thumbnailUrl}",
+              "episode": "{managedEpisodeCount}话"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "/milimili.platform.v1.PlatformService/SearchVideos",
+            "method": "POST",
+            "body": "{\"query\":\"\",\"limit\":6,\"sectionSlug\":\"anime\",\"contentType\":\"pgc\"}",
+            "listSelector": "videos",
+            "urlNeedBaseUrl": false,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "title": "{title}",
+              "url": "{shortId}",
+              "imgUrl": "{thumbnailUrl}",
+              "episode": "{managedEpisodeCount}话"
+            }
+          },
+          "category": {
+            "title": "",
+            "titles": "",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "videos",
+              "urlNeedBaseUrl": false,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "title": "{title}",
+                "url": "{shortId}",
+                "imgUrl": "{thumbnailUrl}",
+                "episode": "{managedEpisodeCount}话"
+              }
+            },
+            "cards": [
+              {
+                "title": "最新番剧",
+                "url": "/milimili.platform.v1.PlatformService/SearchVideos",
+                "method": "POST",
+                "body": "{\"query\":\"\",\"limit\":50,\"sectionSlug\":\"anime\",\"contentType\":\"pgc\"}",
+                "listPath": "videos",
+                "urlNeedBaseUrl": false,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{shortId}",
+                  "imgUrl": "{thumbnailUrl}",
+                  "episode": "{managedEpisodeCount}话"
+                }
+              },
+              {
+                "title": "最新电影",
+                "url": "/milimili.platform.v1.PlatformService/SearchVideos",
+                "method": "POST",
+                "body": "{\"query\":\"\",\"limit\":50,\"sectionSlug\":\"movie\",\"contentType\":\"pgc\"}",
+                "listPath": "videos",
+                "urlNeedBaseUrl": false,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{shortId}",
+                  "imgUrl": "{thumbnailUrl}",
+                  "episode": "{managedEpisodeCount}话"
+                }
+              },
+              {
+                "title": "本季新番",
+                "url": "/milimili.platform.v1.PlatformService/ListBangumiCalendar",
+                "method": "POST",
+                "body": "{\"weekday\":0,\"limit\":50}",
+                "listPath": "videos",
+                "urlNeedBaseUrl": false,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{shortId}",
+                  "imgUrl": "{thumbnailUrl}",
+                  "episode": "{managedEpisodeCount}话"
+                }
+              }
+            ]
+          }
+        },
+        "schedule": {
+          "urlTemplate": "/milimili.platform.v1.PlatformService/ListBangumiCalendar",
+          "method": "POST",
+          "body": "{\"weekday\":{weekday},\"limit\":100}",
+          "listSelector": "videos",
+          "urlNeedBaseUrl": false,
+          "enabledHttps": true,
+          "itemSelectors": {
+            "title": "{title}",
+            "url": "{shortId}",
+            "imgUrl": "{thumbnailUrl}",
+            "episode": "{managedEpisodeCount}话"
+          }
+        },
+        "detail": {
+          "urlTemplate": "/milimili.platform.v1.PlatformService/GetBangumi",
+          "method": "POST",
+          "body": "{\"shortId\":\"{link}\"}",
+          "dataPath": "",
+          "titleSelector": "{video.title}",
+          "descSelector": "{video.summary}",
+          "coverSelector": "{video.thumbnailUrl}",
+          "categorySelector": "{video.sectionName}",
+          "directorSelector": "{video.bangumiMetadata.directors}",
+          "updateTimeSelector": "{video.publishedAt}",
+          "episodes": {
+            "jsonListPath": "episodes",
+            "jsonRouteTitleTemplate": "{video.title}",
+            "itemSelector": "",
+            "itemSelectors": {
+              "title": "第{episodeLabel}话",
+              "url": "https://milimili.moe/watch?ep={ep}"
+            }
+          },
+          "recommends": {"jsonUrlTemplate":"/milimili.platform.v1.PlatformService/GetRecommendations","method":"POST","body":"{\"placements\":[\"related\"],\"sectionSlug\":\"{video.sectionSlug}\",\"sourceId\":\"{video.id}\",\"limit\":6}","listSelector":"boards.0.items","urlNeedBaseUrl":false,"enabledHttps":true,"itemSelectors":{"title":"{video.title}","url":"{video.shortId}","imgUrl":"{video.thumbnailUrl}","episode":"{video.managedEpisodeCount}话"}}
+        },
+        "videoUrl": {
+          "pattern": "json",
+          "urlTemplate": "/milimili.platform.v1.PlatformService/GetEpisode",
+          "method": "POST",
+          "body": "{\"ep\":\"{link#^.*[?&]ep=(\\d+).*$#$1}\",\"versionId\":\"\",\"playbackKey\":\"\",\"client\":\"web\"}",
+          "valuePath": "episode.mediaUrl"
+        }
+      }
+    }
+  ]
+}

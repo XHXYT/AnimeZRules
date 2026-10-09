@@ -1,0 +1,104 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-10-04",
+  "sources": [
+    {
+      "key": "key_baimao",
+      "version": "1.0.3",
+      "name": "黑猫动漫",
+      "group": "动漫",
+      "baseUrl": "https://www.baimaodm.com",
+      "enabled": true,
+      "priority": 25,
+      "description": "黑猫动漫 www.baimaodm.com",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/s_all?ex=1&kw={keyword}",
+            "listSelector": "div.lpic li",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "h2 a@href",
+              "imgUrl": "img@src",
+              "title": "h2 a",
+              "episode": "span font"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "/list/?genre=%E5%89%A7%E5%9C%BA%E7%89%88",
+            "listSelector": "div.lpic li",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "h2 a@href",
+              "imgUrl": "img@src",
+              "title": "h2 a",
+              "episode": "span font"
+            }
+          },
+          "category": {
+            "title": "h2",
+            "titles": "div.dtit",
+            "moreUrl": "span a@href",
+            "moreUrlNeedBaseUrl": true,
+            "videoLists": "div.img",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "ul li",
+              "containerSelector": "div.img",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": "a@href",
+                "imgUrl": "img@src",
+                "title": "p.tname a",
+                "episode": "p a"
+              }
+            }
+          }
+        },
+        "detail": {
+          "titleSelector": "h1",
+          "descSelector": "div.info",
+          "coverSelector": ".thumb img@src",
+          "episodes": {
+            "routeTitlesSelector": "ul.menu0 li",
+            "routeContainersSelector": "div.movurl",
+            "itemSelector": "li",
+            "itemSelectors": {
+              "url": "a@href",
+              "title": "a"
+            },
+            "routeExcludeKeywords": [
+              "下载"
+            ]
+          },
+          "recommends": {
+            "urlTemplate": "{link#^https?://[^/]+/show/(\\d+)\\.html$#/play/$1-0-0.html}",
+            "listSelector": "div.imgs ul li",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "p.tname a@href",
+              "imgUrl": "img@src",
+              "title": "p.tname a",
+              "episode": "p:last-child a"
+            }
+          }
+        },
+        "videoUrl": {
+          "pattern": "link",
+          "urlSelector": "",
+          "iframeSelector": "(function(){\nvar posted=false;\nfunction post(v){if(!posted){posted=true;try{window.animeBridge.onLink(String(v));}catch(e){posted=false;}}}\nfunction ok(u){u=String(u);if(u.indexOf('http')!==0){return '';}if(u.indexOf('.m3u8')>=0){return u;}if(u.indexOf('.mp4')>=0){return u;}return '';}\nfunction extract(s){\ntry{\nvar q=s.indexOf('?');var h=s.indexOf('#');\nvar cut=(q>=0&&h>=0)?Math.min(q,h):((q>=0)?q:h);\nif(cut<0){return '';}\nvar tail=s.substring(cut+1);\nvar m=tail.match(/https?:\\/\\/[^\\s\"'&<>]+\\.m3u8/);if(m){return m[0];}\nm=tail.match(/https?:\\/\\/[^\\s\"'&<>]+\\.mp4/);if(m){return m[0];}\nvar ps=tail.split('&');\nfor(var i=0;i<ps.length;i++){\ntry{\nvar d=decodeURIComponent(ps[i]);\nif(d!==ps[i]){\nvar n=d.match(/https?:\\/\\/[^\\s\"'&<>]+\\.m3u8/);if(n){return n[0];}\nn=d.match(/https?:\\/\\/[^\\s\"'&<>]+\\.mp4/);if(n){return n[0];}\n}\n}catch(e){}\ntry{\nvar v=ps[i].substring(ps[i].indexOf('=')+1);\nvar b=atob(v);\nvar n2=b.match(/https?:\\/\\/[^\\s\"'&<>]+\\.m3u8/);if(n2){return n2[0];}\nn2=b.match(/https?:\\/\\/[^\\s\"'&<>]+\\.mp4/);if(n2){return n2[0];}\n}catch(e){}\n}\n}catch(e){}\nreturn '';\n}\nvar oo=XMLHttpRequest.prototype.open;\nXMLHttpRequest.prototype.open=function(m,u){try{var r=ok(u);if(r){post(r);}}catch(e){}return oo.apply(this,arguments);};\nvar of=window.fetch;\nwindow.fetch=function(){try{var a=arguments[0];var u=(typeof a==='string')?a:((a&&a.url)||'');var r=ok(u);if(r){post(r);}}catch(e){}return of.apply(this,arguments);};\nvar n=0;\nvar iv=setInterval(function(){\nn++;\nif(posted){clearInterval(iv);return;}\ntry{\nvar f=document.getElementById('hm_playfram');\nvar s=f?String(f.src||''):'';\nif(s.indexOf('http')===0){\nvar p=s.split('?')[0].split('#')[0].toLowerCase();\nif(p.indexOf('.m3u8')>=0||p.indexOf('.mp4')>=0){post(s);clearInterval(iv);return;}\nvar e1=extract(s);\nif(e1){post(e1);clearInterval(iv);return;}\nif(s.indexOf(location.origin)===0){\nvar x=new XMLHttpRequest();\nx.open('GET',s);\nx.onload=function(){try{var t=x.responseText;var m=t.match(/https?:\\/\\/[^\"'\\s\\\\<]+\\.m3u8/);if(!m){m=t.match(/https?:\\/\\/[^\"'\\s\\\\<]+\\.mp4/);}if(m){post(m[0]);}}catch(e){}};\nx.send();\n}\nclearInterval(iv);return;\n}\n}catch(e){}\nif(n>40){clearInterval(iv);}\n},500);\nreturn 'PENDING';\n})()"
+        }
+      },
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36",
+      "update_time": "2026-10-08"
+    }
+  ]
+}

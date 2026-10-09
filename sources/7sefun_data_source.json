@@ -1,0 +1,149 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-10-04",
+  "sources": [
+    {
+      "key": "key_7sefun",
+      "version": "1.0.0",
+      "name": "七色番",
+      "group": "动漫",
+      "baseUrl": "https://www.7sefun.top",
+      "enabled": true,
+      "priority": 20,
+      "description": "七色番动漫视频网 www.7sefun.top（需设备网络可正常访问站点）",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/vodsearch/-------------.html?wd={keyword}",
+            "listSelector": "div.video.anim",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.video-wrapper@href",
+              "imgUrl": "img.videoimg@src",
+              "title": "a.video-wrapper img@alt",
+              "episode": "div.video-time"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "",
+            "listSelector": "div.main-blogs div.option",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": {
+                "selector": "div.info@onclick",
+                "postProcess": {
+                  "type": "script",
+                  "script": "return utils.string.between(result, '\"', '\"')"
+                }
+              },
+              "imgUrl": "div.icon img@src",
+              "title": "div.info div.main",
+              "episode": "div.info div.sub"
+            }
+          },
+          "category": {
+            "title": "",
+            "titles": "",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "div.video.anim",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": "a.video-wrapper@href",
+                "imgUrl": "img.videoimg@src",
+                "title": "a.video-wrapper img@alt",
+                "episode": "div.video-time"
+              }
+            },
+            "cards": [
+              {
+                "title": "TV番剧",
+                "url": "/vodtype/1.html",
+                "moreUrl": "",
+                "listSelector": "div.video.anim",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "a.video-wrapper@href",
+                  "imgUrl": "img.videoimg@src",
+                  "title": "a.video-wrapper img@alt",
+                  "episode": "div.video-time"
+                }
+              },
+              {
+                "title": "剧场电影",
+                "url": "/vodtype/2.html",
+                "moreUrl": "",
+                "listSelector": "div.video.anim",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "a.video-wrapper@href",
+                  "imgUrl": "img.videoimg@src",
+                  "title": "a.video-wrapper img@alt",
+                  "episode": "div.video-time"
+                }
+              },
+              {
+                "title": "特摄剧",
+                "url": "/vodtype/4.html",
+                "moreUrl": "",
+                "listSelector": "div.video.anim",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "a.video-wrapper@href",
+                  "imgUrl": "img.videoimg@src",
+                  "title": "a.video-wrapper img@alt",
+                  "episode": "div.video-time"
+                }
+              }
+            ]
+          }
+        },
+        "detail": {
+          "titleSelector": {
+            "selector": ".video-p-name",
+            "postProcess": {
+              "type": "script",
+              "script": "return String(result).replace(/热度.*$/, '').trim()"
+            }
+          },
+          "descSelector": "meta[name=description]@content",
+          "coverSelector": ".author-img@src",
+          "categorySelector": ".video-p-sub1:contains(类型)",
+          "directorSelector": ".video-p-sub1:contains(导演)",
+          "episodes": {
+            "routeTitlesSelector": "ul.chat-stream-bfqs li",
+            "routeContainersSelector": "div.vod-play-list-container",
+            "itemSelector": "span",
+            "itemSelectors": {
+              "url": "a@href",
+              "title": "a"
+            }
+          },
+          "recommends": {"listSelector":"div.chat-vid__container div.chat-vid","urlNeedBaseUrl":true,"enabledHttps":true,"itemSelectors":{"url":"a.chat-vid__wrapper@href","imgUrl":"img.chat-vid__img@src","title":".chat-vid__name","episode":".chat-vid__by"}}
+        },
+        "videoUrl": {
+          "pattern": "regex",
+          "urlSelector": "\"url\":\"([^\"]*)\",\"url_next\"",
+          "postProcess": "base64Decode();decodeUri()",
+          "iframeSelector": "(function(){return 'PENDING';})()"
+        }
+      }
+    }
+  ]
+}

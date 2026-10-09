@@ -1,0 +1,141 @@
+{
+  "version": "1.0.1",
+  "author": "user",
+  "update_time": "2026-10-09",
+  "sources": [
+    {
+      "key": "key_mxdm",
+      "version": "1.0.1",
+      "name": "MX动漫",
+      "group": "动漫",
+      "baseUrl": "https://www.dcc3.com",
+      "enabled": true,
+      "priority": 27,
+      "description": "MX动漫 www.dcc3.com 免费在线看动漫",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/search/?wd={keyword}",
+            "listSelector": "div.search.container ul li",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.cover@href",
+              "imgUrl": "img.lazy@data-original",
+              "title": "h3 a",
+              "episode": {
+                "selector": "div.item",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": { "type": "replace", "search": "^状态：", "replace": "", "flags": "g" }
+                }
+              }
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "/type/dmfilm/",
+            "listSelector": "div.main.pt20.container ul li",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": ".txt a@href",
+              "imgUrl": "img.lazy@data-original",
+              "title": ".txt a",
+              "episode": ".txt p"
+            }
+          },
+          "category": {
+            "title": "",
+            "titles": "",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "li",
+              "containerSelector": "div.main.pt20.container ul",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": ".txt a@href",
+                "imgUrl": "img.lazy@data-original",
+                "title": ".txt a",
+                "episode": ".txt p"
+              }
+            },
+            "cards": [
+              {
+                "title": "国产动漫",
+                "url": "/type/guoman/",
+                "moreUrl": "/type/guoman/{page}/",
+                "listSelector": "div.main.pt20.container ul li",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": ".txt a@href",
+                  "imgUrl": "img.lazy@data-original",
+                  "title": ".txt a",
+                  "episode": ".txt p"
+                }
+              },
+              {
+                "title": "日本动漫",
+                "url": "/type/riman/",
+                "moreUrl": "/type/riman/{page}/",
+                "listSelector": "div.main.pt20.container ul li",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": ".txt a@href",
+                  "imgUrl": "img.lazy@data-original",
+                  "title": ".txt a",
+                  "episode": ".txt p"
+                }
+              },
+              {
+                "title": "动漫电影",
+                "url": "/type/dmfilm/",
+                "moreUrl": "/type/dmfilm/{page}/",
+                "listSelector": "div.main.pt20.container ul li",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": ".txt a@href",
+                  "imgUrl": "img.lazy@data-original",
+                  "title": ".txt a",
+                  "episode": ".txt p"
+                }
+              }
+            ]
+          }
+        },
+        "detail": {
+          "titleSelector": "div.detail h2",
+          "descSelector": "li.blurb",
+          "coverSelector": ".detail .cover img@data-original",
+          "episodes": {
+            "routeTitlesSelector": ".playlist .tabs a",
+            "routeContainersSelector": ".playlist .row ul",
+            "itemSelector": "li",
+            "itemSelectors": {
+              "url": "a@href",
+              "title": "a"
+            }
+          },
+          "recommends": {"listSelector":"div.related ul li","urlNeedBaseUrl":true,"enabledHttps":true,"itemSelectors":{"url":"a@href","imgUrl":"img.lazy@data-original","title":".txt a","episode":".txt p"}}
+        },
+        "videoUrl": {
+          "pattern": "regex",
+          "urlSelector": "url:\\s*'([^']+)'",
+          "postProcess": ""
+        }
+      }
+    }
+  ]
+}

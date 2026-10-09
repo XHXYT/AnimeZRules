@@ -1,0 +1,186 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-10-04",
+  "sources": [
+    {
+      "key": "key_ezdmw",
+      "version": "1.0.4",
+      "name": "E站弹幕网",
+      "group": "动漫",
+      "baseUrl": "https://m.ezdmw.org",
+      "enabled": true,
+      "priority": 29,
+      "description": "E站弹幕网 ezdmw.org",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/Index/search_some.html?searchText={keyword}&page=0",
+            "listSelector": "#some_drama > div",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": "img.img1@src",
+              "title": {
+                "selector": "p[style*=\"font-weight:bold\"]",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": {
+                    "type": "replace",
+                    "search": "(?:&nbsp;|[\\s\\u00A0])*更至.*$",
+                    "replace": "",
+                    "flags": "g"
+                  }
+                }
+              },
+              "episode": {
+                "selector": "p[style*=\"font-weight:bold\"]",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": {
+                    "type": "regex",
+                    "pattern": "更至[^&\\s]*"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "https://www.ezdmw.org/",
+            "listSelector": "div.rec-ct div.rec-item",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": "img@src",
+              "title": "img@title",
+              "episode": {
+                "selector": "p.info span:nth-of-type(2)",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": {
+                    "type": "replace",
+                    "search": "更新到：",
+                    "replace": "",
+                    "flags": "g"
+                  }
+                }
+              }
+            }
+          },
+          "category": {
+            "title": "h2",
+            "titles": "div.dtit",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "div.img",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "ul li",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": {
+                  "selector": "a@href",
+                  "postProcess": {
+                    "type": "string",
+                    "stringProcess": {
+                      "type": "replace",
+                      "search": "^/show/(\\d+)\\.html$",
+                      "replace": "/Index/bangumi/$1.html",
+                      "flags": "g"
+                    }
+                  }
+                },
+                "imgUrl": "img.img1@src",
+                "title": "p.tname a",
+                "episode": "p.author a"
+              }
+            }
+          }
+        },
+        "detail": {
+          "titleSelector": "meta[name=keywords]@content",
+          "descSelector": "meta[name=description]@content",
+          "coverSelector": "img.fengmian@src",
+          "episodes": {
+            "containerSelector": "section.anthology",
+            "itemSelector": "a.circuit_switch1",
+            "itemSelectors": {
+              "url": "@href",
+              "title": "span"
+            },
+            "routeTitlesSelector": "div.line_button1, div.line_button3",
+            "routeItemSelectors": [
+              "a.circuit_switch1",
+              "a.circuit_switch3"
+            ],
+            "routeTitleProcess": {
+              "type": "string",
+              "stringProcess": {
+                "type": "replace",
+                "search": "\\s*\\d+$",
+                "replace": "",
+                "flags": "g"
+              }
+            }
+          },
+          "recommends": {
+            "urlTemplate": "/Index/search_some.html?searchText=%E8%A1%A5%E7%95%AA&page={rand:0,200,10}&hot=true",
+            "listSelector": "#some_drama > div",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": "img.img1@src",
+              "title": {
+                "selector": "p[style*=\"font-weight:bold\"]",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": {
+                    "type": "replace",
+                    "search": "(?:&nbsp;|[\\s\\u00A0])*更至.*$",
+                    "replace": "",
+                    "flags": "g"
+                  }
+                }
+              },
+              "episode": {
+                "selector": "p[style*=\"font-weight:bold\"]",
+                "postProcess": {
+                  "type": "string",
+                  "stringProcess": {
+                    "type": "regex",
+                    "pattern": "更至[^&\\s]*"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "videoUrl": {
+          "steps": [
+            {
+              "pattern": "selector",
+              "urlSelector": "iframe.iframe@src"
+            },
+            {
+              "pattern": "selector",
+              "urlSelector": "#video@src",
+              "postProcess": "script:var r=String(result);return r.indexOf('http')===0?r:('https:'+r);"
+            }
+          ],
+          "proxy": {
+            "type": "tsStrip",
+            "referer": "https://player.ezdmw.com/"
+          }
+        }
+      },
+      "update_time": "2026-10-08"
+    }
+  ]
+}

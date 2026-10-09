@@ -1,0 +1,88 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-10-04",
+  "sources": [
+    {
+      "key": "key_akianime",
+      "version": "1.0.0",
+      "name": "Aki动漫",
+      "group": "动漫",
+      "baseUrl": "https://www.akianime.cc",
+      "enabled": true,
+      "priority": 22,
+      "description": "AkiAnime - 最新动漫尽在Aki www.akianime.cc",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/bgmsearch/-------------.html?wd={keyword}",
+            "listSelector": "div.vod-detail.search-list",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": ".detail-info a@href",
+              "imgUrl": "img.gen-movie-img@data-src",
+              "title": "h3.slide-info-title",
+              "episode": ".slide-info-remarks.cor5"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "",
+            "listSelector": ".slide-a .swiper-slide",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.lank@href",
+              "imgUrl": "div.slide-time-img2@data-background",
+              "title": "h3.slide-info-title",
+              "episode": "ul.gen-meta-after-title li"
+            }
+          },
+          "category": {
+            "title": "h4",
+            "titles": "div.title:contains(新旧番剧), div.title:contains(动漫剧场), div.title:contains(动漫专题)",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "div.flex.wrap.border-box.public-r",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "div.public-list-box",
+              "containerSelector": "div.public-r",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": "a.public-list-exp@href",
+                "imgUrl": "img.gen-movie-img@data-src",
+                "title": "a.public-list-exp@title",
+                "episode": ".public-list-prb"
+              }
+            }
+          }
+        },
+        "detail": {
+          "titleSelector": "h3.slide-info-title",
+          "descSelector": ".switch-box .text",
+          "coverSelector": ".detail-pic img@data-src",
+          "episodes": {
+            "routeTitlesSelector": ".anthology-tab .swiper-slide",
+            "routeContainersSelector": "ul.anthology-list-play",
+            "itemSelector": "li",
+            "itemSelectors": {
+              "url": "a@href",
+              "title": "a"
+            }
+          },
+          "recommends": {"listSelector":"div.title:contains(相关作品) + div div.public-list-box","urlNeedBaseUrl":true,"enabledHttps":true,"itemSelectors":{"url":"a.public-list-exp@href","imgUrl":"img.gen-movie-img@data-src","title":".time-title","episode":".public-list-prb"}}
+        },
+        "videoUrl": {
+          "pattern": "regex",
+          "urlSelector": "\"url\":\"([^\"]*)\",\"url_next\"",
+          "postProcess": "replaceAll('\\\\/', '/')"
+        }
+      }
+    }
+  ]
+}

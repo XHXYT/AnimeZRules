@@ -256,22 +256,38 @@
   <tr><td><code>description</code></td><td>string</td><td><span class="tag opt">可选</span></td><td>源介绍（可注明播放限制，如 "播放需账号登录"）</td></tr>
   <tr><td><code>defaultSource</code></td><td>boolean</td><td><span class="tag opt">可选</span></td><td>是否默认源</td></tr>
   <tr><td><code>login</code></td><td>object</td><td><span class="tag opt">可选</span></td><td>登录配置，见下节</td></tr>
+  <tr><td><code>adFilter</code></td><td>boolean</td><td><span class="tag opt">可选</span></td><td>m3u8 广告拦截源级开关：<code>true</code>=该源参与广告拦截、跟随应用"设置 → m3u8 广告拦截"全局开关（全局开才过滤）；未配置或 <code>false</code>=该源强制不过滤。播放前抓取播放列表，按分片路径特征（adjump/alimama/promo 等）剔除贴片广告分片，经本地服务下发</td></tr>
+  <tr><td><code>userAgent</code></td><td>string</td><td><span class="tag opt">可选</span></td><td>源级 User-Agent：WebView 嗅探/注入解析播放页时使用（部分站点按 UA 返回不同页面——移动 UA 可能拿到 APP 跳转版导致嗅探全空，桌面 Chrome UA 是排障首选）。留空用系统默认；不影响纯 HTTP 请求</td></tr>
   <tr><td><code>parserConfig</code></td><td>object</td><td><span class="tag req">必填</span></td><td>解析配置，本文档的主角</td></tr>
 </table>
 
 <h2 id="login">登录配置 login</h2>
-<p>部分站点的播放接口需要登录凭证（JSON API 登录）。配置后，源列表<strong>长按源卡片</strong>会出现"账号登录"入口；登录成功取得的 token 会自动附加到该源的<strong>所有 API 请求</strong>上。</p>
+<p>部分站点的播放接口需要登录凭证。配置后，源列表<strong>长按源卡片</strong>会出现"账号登录"入口；登录成功取得的凭证会自动附加到该源的<strong>所有 API 请求</strong>上。两种登录类型：</p>
+<ul>
+  <li><strong><code>api</code>（默认）</strong>：JSON API token 登录——POST 登录接口，从响应 JSON 按 <code>tokenPath</code> 取 token，附加到 <code>authHeaderName</code> 请求头（如 <code>Authorization: Bearer xxx</code>）；</li>
+  <li><strong><code>cookie</code></strong>：Cookie 会话登录——POST 登录接口后<strong>捕获响应 Set-Cookie</strong>（拼接 <code>name=value; ...</code>，并解析 <code>Expires</code> 作为过期时间），后续请求经 <code>authHeaderName: "Cookie"</code> 回放。适合 Connect-RPC 等只认会话 Cookie、不认自定义 token 头的站点（参考 milimili 源）。</li>
+</ul>
 <pre><code>"login": {
-  "type": "api",                       // 固定 "api"
+  "type": "api",                       // "api"（默认，可省略）| "cookie"
   "loginUrl": "/api/auth/login",       // 登录接口（相对 baseUrl 或绝对）
   "usernameField": "username",         // 请求体用户名字段名，默认 username
   "passwordField": "password",         // 请求体密码字段名，默认 password
-  "extraBody": { },                    // 额外固定请求体字段（可选）
-  "tokenPath": "data.token",           // token 在登录响应中的 JSON 路径，默认 data.token
-  "authHeaderName": "Authorization",   // 携带凭证的请求头名，默认 Authorization
+  "extraBody": { },                    // 额外固定请求体字段（可选，支持布尔值如 {"remember":true}）
+  "tokenPath": "data.token",           // api 模式：token 在登录响应中的 JSON 路径，默认 data.token
+  "authHeaderName": "Authorization",   // 携带凭证的请求头名，默认 Authorization（cookie 模式配 "Cookie"）
   "authValueTemplate": "{token}"       // 请求头值模板，默认 {token}
 }</code></pre>
-<div class="note"><code>authValueTemplate</code> 支持前缀写法，例如站点要求 <code>Bearer xxx</code> 时填 <code>"Bearer {token}"</code>。</div>
+<p>cookie 模式示例（虚构 Connect-RPC 站，登录接口与业务接口同为 POST 端点）：</p>
+<pre><code>"login": {
+  "type": "cookie",
+  "loginUrl": "/platform.v1.AccountService/Login",
+  "usernameField": "handle",
+  "passwordField": "password",
+  "extraBody": { "remember": true },
+  "authHeaderName": "Cookie",
+  "authValueTemplate": "{token}"
+}</code></pre>
+<div class="note"><code>authValueTemplate</code> 支持前缀写法，例如站点要求 <code>Bearer xxx</code> 时填 <code>"Bearer {token}"</code>。登录响应/业务响应的错误消息兼容 <code>msg</code> 与 <code>message</code> 两种字段名（Connect-RPC 用 <code>message</code>，如 401 <code>{"code":"unauthenticated","message":"请先登录"}</code> 会直接提示"请先登录"）。</div>
 
 <h2 id="parser-overview">parserConfig 总览</h2>
 <pre><code>"parserConfig": {
@@ -340,8 +356,37 @@ play_from          → 顶层数组字段</code></pre>
 <ul>
   <li>相对地址自动拼 <code>baseUrl</code>；</li>
   <li>自动附加 <code>parserConfig.requestHeaders</code> 与登录 token；</li>
-  <li>响应是对象且 <code>code</code> 存在且非 0 时，抛出 <code>msg</code> 作为错误信息（兼容常见业务码约定）。</li>
+  <li>响应是对象且 <code>code</code> 存在且非 0 也非 200 时，视为业务错误：抛出 <code>msg</code>（缺省时依次取 <code>message</code>、"接口返回错误码 N"）作为错误信息（兼容 <code>0</code> 与 <code>200</code> 两种成功码约定，如 sorani 用 <code>code:200</code> 表示成功；Connect-RPC 风格错误用 <code>message</code> 字段）。</li>
 </ul>
+<h3>POST 请求（method/body，可选）</h3>
+<p>JSON 模式的每个请求端点都可声明 <code>method</code> 与 <code>body</code>（缺省 GET，不声明即完全沿用原行为），用于 Connect-RPC 等 POST 型 JSON 接口：</p>
+<pre><code>"search": {
+  "videos": {
+    "urlTemplate": "/api.example.com/bangumi.v1.BangumiService/SearchBangumi",  // POST 时即接口端点，可为绝对地址
+    "method": "POST",
+    "body": '{"keywords":"{keyword}","page":{page}}',   // JSON 请求体模板
+    "listSelector": "data.list",
+    "itemSelectors": { "title": "{title}", "url": "{baseUrl}/video/{seasonId}", "imgUrl": "{coverUrl}" }
+  }
+}</code></pre>
+<table>
+  <tr><th>字段</th><th>说明</th></tr>
+  <tr><td><code>method</code></td><td>请求方法，缺省 <code>GET</code>；设为 <code>POST</code> 时以 <code>application/json</code> 发送 <code>body</code> 渲染后的请求体</td></tr>
+  <tr><td><code>body</code></td><td>JSON 请求体模板。占位符取值后做 <strong>JSON 字符串转义</strong>（引号/反斜杠安全，非 URL 编码），保证请求体合法；支持<strong>值变换占位符</strong> <code>{路径#正则#替换}</code>——取值后先做一次正则替换再转义嵌入（如 <code>{link#^.*[?&]ep=(\d+).*$#$1}</code> 从选集链接中提取剧集编号），正则失败回退原值</td></tr>
+</table>
+<p>各端点 <code>body</code> 可用的占位符：</p>
+<table>
+  <tr><th>端点</th><th>配置位置</th><th>占位符</th></tr>
+  <tr><td>搜索</td><td><code>search.videos</code></td><td><code>{keyword}</code>、<code>{page}</code></td></tr>
+  <tr><td>首页"更多"列表</td><td><code>homepage.category.videos</code></td><td><code>{page}</code></td></tr>
+  <tr><td>首页分类卡片 / 轮播</td><td><code>category.cards[]</code> / <code>banner</code></td><td>无（写固定请求体）</td></tr>
+  <tr><td>周表</td><td><code>schedule</code></td><td><code>{weekday}</code>（1-7）、<code>{weekday0}</code>（0-6）</td></tr>
+  <tr><td>详情接口</td><td><code>detail</code></td><td><code>{link}</code>（搜索结果里存的详情地址/ID）</td></tr>
+  <tr><td>选集接口</td><td><code>detail.episodes</code></td><td>详情字段点分路径（与 <code>jsonSectionsUrlTemplate</code> 同上下文，含路线字段）</td></tr>
+  <tr><td>推荐接口</td><td><code>detail.recommends</code></td><td>详情字段点分路径（与 <code>jsonUrlTemplate</code> 同上下文）</td></tr>
+  <tr><td>播放地址接口</td><td><code>videoUrl</code>（pattern=json）</td><td><code>{link}</code>（剧集 link）；配置 <code>urlTemplate</code> 时剧集链接仅作占位符上下文，见<a href="#videourl">播放地址</a>一节</td></tr>
+</table>
+<div class="note">Connect-RPC 站点通常还需要附加请求头（如 <code>Connect-Protocol-Version: 1</code>），用源级 <code>requestHeaders</code> 配置即可，无需引擎额外支持。POST 端点的 <code>urlTemplate</code> 可为绝对地址（独立接口域名），引擎不再强拼 <code>baseUrl</code>。</div>
 
 <h2 id="search">搜索 search</h2>
 <pre><code>"search": {
@@ -384,11 +429,13 @@ play_from          → 顶层数组字段</code></pre>
     "imageUrlSelector": "img.ds-verify-img@src",  // 验证码图片选择器（selector@attr）；留空且判定元素本身是 img 时自动回退为 detectSelector+@src
     "imageNeedBaseUrl": true,                     // 图片地址是否拼 baseUrl，默认 true
     "imageCacheBustParam": "r",                   // 获取图片时附加 ?r=随机数 防缓存（可选）
+    "imageUrlTemplate": "/index.php/verify/index.html?",  // 可选：图片固定地址模板（相对 baseUrl 或绝对地址）
     "verifyUrlTemplate": "/index.php/ajax/verify_check?type=search&verify={code}",  // {code}=用户输入
     "successContains": "\"code\":1"               // 提交响应包含该子串视为成功（可选）
   }
 }</code></pre>
 <div class="note">验证码弹窗只在搜索页出现；未配置或校验连续失败 3 次时按普通搜索失败处理。前提是站点验证流程为「图片 + 提交校验 + 会话 Cookie 生效」，带滑动/点选等交互验证的站不适用。</div>
+<p><code>imageUrlTemplate</code> 是图片地址的<strong>兜底模板</strong>：部分站点验证码图片由页面 JS 动态注入，搜索响应里根本没有 <code>img</code> 元素（或选择器取不到地址）时，改用该固定地址获取图片（如 MacCMS 的 <code>/index.php/verify/index.html</code>，配合 <code>imageCacheBustParam</code> 防缓存）。<code>imageUrlSelector</code> 能正常取到图片时不会用到它。</p>
 
 <h2 id="homepage">首页 homepage</h2>
 <h3>横幅 banner</h3>
@@ -399,6 +446,7 @@ play_from          → 顶层数组字段</code></pre>
   "enabledHttps": true,
   "itemSelectors": { "url": "a@href", "imgUrl": "img@src", "title": ".title", "episode": ".ins p" }
 }</code></pre>
+<p><strong>HTML 模式</strong>——<code>urlTemplate</code> 决定轮播数据来源页：留空（或与首页相同）时直接解析首页文档；填其他地址（相对路径拼 <code>baseUrl</code>，也可绝对地址）时引擎会<strong>独立请求该页</strong>解析轮播。站内没有真轮播时，可把分类列表页（如"剧场版"）当地播页使用；首页本身已有可用区块时，也可留空并用组合器 + <code>:contains</code> 定位（如 <code>div.title:contains(剧场版) + div div.public-list-box</code>，见 mgnacg 源）。</p>
 <p>JSON 模式下 <code>urlTemplate</code> 支持 <code>{today}</code> 占位符（当前星期，用于"今日更新"类接口），<code>listSelector</code> 填 JSON 路径如 <code>data.list.0.videos</code>。</p>
 
 <h3>分类 category</h3>
@@ -450,14 +498,14 @@ play_from          → 顶层数组字段</code></pre>
 }</code></pre>
 <table>
   <tr><th>字段</th><th>说明</th></tr>
-  <tr><td><code>urlTemplate</code></td><td>周表数据地址模板；<code>{weekday}</code> 会被替换为 1-7（周一=1），<code>{weekday0}</code> 替换为 0-6（周一=0，适配 0 起始的星期字段/接口，如稀饭的 <code>update_weekday</code>）。相对路径自动拼 <code>baseUrl</code>，也可填绝对地址</td></tr>
+  <tr><td><code>urlTemplate</code></td><td>周表数据地址模板；<code>{weekday}</code> 会被替换为 1-7（周一=1），<code>{weekday0}</code> 替换为 0-6（周一=0，适配 0 起始的星期字段/接口，如某接口的 <code>update_weekday</code>）。相对路径自动拼 <code>baseUrl</code>，也可填绝对地址</td></tr>
   <tr><td><code>listSelector</code></td><td>HTML 模式=条目 CSS 选择器；JSON 模式=当天列表在响应中的 JSON 路径（如 <code>data.list.0.videos</code>），<strong>可留空</strong>（空=响应根数组）</td></tr>
   <tr><td><code>weekdayBlocksSelector</code> <span class="tag opt">可选 仅HTML</span></td><td><strong>首页多区块形态</strong>：一周各天分区在同一页面时，填所有星期区块的容器选择器（如 <code>.anime-schedule</code>）。引擎按区块标题文本（"星期三/周三/水曜日/Wednesday"）定位对应星期的区块，再在其中用 <code>listSelector</code> 提取条目；区块顺序无关（"今天在前"轮转也能正确匹配），找不到对应区块视为当天无更新</td></tr>
   <tr><td><code>weekdayTitleSelector</code> <span class="tag opt">可选 仅HTML</span></td><td>每个区块内标识星期的标题元素选择器（如 <code>h4</code>），与 <code>weekdayBlocksSelector</code> 配套使用</td></tr>
   <tr><td><code>itemSelectors</code></td><td>字段选择器/模板，与搜索结果、分类卡片完全相同（url/imgUrl/title/episode + 扩展字段）</td></tr>
   <tr><td><code>urlNeedBaseUrl</code> / <code>enabledHttps</code></td><td>同 VideoConfig：条目 url 相对路径拼接、http 升级 https</td></tr>
 </table>
-<p>首页多区块形态示例（饭团动漫：首页 7 个"星期X"区块即周表数据）：</p>
+<p>首页多区块形态示例（某站：首页 7 个"星期X"区块即周表数据）：</p>
 <pre><code>"schedule": {
   "urlTemplate": "/",                          // 首页本身
   "weekdayBlocksSelector": ".anime-schedule",  // 所有星期区块
@@ -467,7 +515,7 @@ play_from          → 顶层数组字段</code></pre>
   "enabledHttps": true,
   "itemSelectors": { "url": "a.stretched-link@href", "imgUrl": "img.anime-cover@data-src", "title": "a.stretched-link", "episode": ".anime-update-info p" }
 }</code></pre>
-<div class="note">周表按天懒加载并缓存：切到某天才请求当天接口，再次切换直接用缓存。周表源独立于首页数据源，在 设置 → 周表数据源 中选择；站点若提供"不带星期参数返回全周"的接口，也请逐天配置（按天请求语义更明确）。JSON 源的 <code>urlTemplate</code> 可直接带站点过滤参数——如稀饭 <code>is_finished=eq.false</code> 只取连载中的新番，否则会把历史上所有星期几更新的老番都列出来。</div>
+<div class="note">周表按天懒加载并缓存：切到某天才请求当天接口，再次切换直接用缓存。周表源独立于首页数据源，在 设置 → 周表数据源 中选择；站点若提供"不带星期参数返回全周"的接口，也请逐天配置（按天请求语义更明确）。JSON 源的 <code>urlTemplate</code> 可直接带站点过滤参数——如 PostgREST 风格参数 <code>is_finished=eq.false</code> 只取连载中的新番，否则会把历史上所有星期几更新的老番都列出来。</div>
 
 <h2 id="detail">详情 detail</h2>
 <p>进入详情页后，引擎请求 <code>url</code>（列表阶段取到的地址）并解析以下字段。</p>
@@ -482,8 +530,10 @@ play_from          → 顶层数组字段</code></pre>
   "episodes": { ... },      // 见下一节
   "recommends": { ... }     // 见推荐一节
 }</code></pre>
-<p><strong>JSON 模式</strong>——<code>link</code> 是接口地址，字段全部改填 <code>{ }</code> 模板（上下文 = 详情接口响应对象）：</p>
+<div class="note"><code>titleSelector</code> / <code>descSelector</code> 支持三种形态：①纯文本选择器（取元素文本）；②<code>选择器@属性</code>（取属性值，如 <code>meta[name=description]@content</code>，适合详情页无结构化简介、只有 meta 标签的站）；③对象形态 <code>{ "selector": "...", "postProcess": { ... } }</code>（选择器同样支持 <code>@属性</code>，先取值再做后处理，如标题去掉「热度：xxx」后缀——参考 7sefun 源）。</div>
+<p><strong>JSON 模式</strong>——<code>link</code> 是接口地址（或业务 ID，见 <code>urlTemplate</code>），字段全部改填 <code>{ }</code> 模板（上下文 = 详情接口响应对象）：</p>
 <pre><code>"detail": {
+  "urlTemplate": "/api.example.com/bangumi.v1.BangumiService/GetBangumi",  // 可选：详情端点地址模板
   "dataPath": "0",               // 可选：详情数据在响应中的 JSON 路径，默认 data（支持数组索引）
   "titleSelector": "{title}",
   "descSelector": "{description}",
@@ -495,7 +545,8 @@ play_from          → 顶层数组字段</code></pre>
   "episodes": { ... },
   "recommends": { ... }
 }</code></pre>
-<p>默认从响应的 <code>data</code> 字段取详情对象；接口直接返回数组或对象本身时用 <code>dataPath</code> 指定（支持点分路径与数组索引，如 PostgREST 数组响应填 <code>0</code>，根对象本身填空串之外的取值均可按需配置）。</p>
+<p>默认从响应的 <code>data</code> 字段取详情对象；接口直接返回数组或对象本身时用 <code>dataPath</code> 指定（支持点分路径与数组索引，如 PostgREST 数组响应填 <code>0</code>；<strong>显式填空串 <code>""</code> 表示响应根对象本身</strong>，应用内编辑器中输入 <code>.</code> 即映射为空串——详情字段与剧集数组平级、没有统一包裹字段时用它，参考 milimili 源）。</p>
+<div class="note"><code>urlTemplate</code>（可选）配置后，引擎不再直接请求列表阶段存下的 <code>link</code>，而是以 <code>{link}</code> 占位符渲染该模板得到详情端点地址（相对路径拼 <code>baseUrl</code>）。适用于搜索结果只能存<strong>业务 ID</strong>（如 <code>shortId</code>）、需要拼出固定端点才能查详情的接口站（如 Connect-RPC 的 <code>GetBangumi</code>）。配合 <code>method</code>/<code>body</code>（见<a href="#template-syntax">POST 请求</a>）可在请求体里带上 <code>"id":"{link}"</code>。未配置时沿用旧行为：<code>link</code> 本身即详情接口地址。</div>
 <h3>详情扩展字段 extra（可选）</h3>
 <p><code>extra</code> 的键与「可选扩展字段」一节完全相同（<code>playCount / year / month / director / actors / tags</code>，其中 <code>actors</code> 为声优），用于补充/丰富详情信息；详情的导演、声优等信息统一配在这里。HTML 模式值为 CSS 选择器，JSON 模式值为 <code>{ }</code> 模板，同样支持 <code>{ selector, postProcess }</code> 复杂配置。旧版基础字段 <code>directorSelector</code> / <code>protagonistSelector</code> 仅为兼容保留（<code>extra</code> 优先，二者等价），应用内编辑器已不再提供这两个入口，旧源在编辑器中打开时会自动迁移到 <code>extra</code>；新建源请直接使用 <code>extra</code>：</p>
 <pre><code>"extra": {
@@ -516,6 +567,12 @@ play_from          → 顶层数组字段</code></pre>
   // —— 多路线（多播放源）——
   "routeTitlesSelector": "#y-playList .module-tab-item > span",      // 路线标题（如"播放1""备用2"）
   "routeContainersSelector": "#panel1 .module-play-list-content",    // 每条路线的列表容器
+  // —— 多路线·按路线选择器（线路按钮与剧集组无父子关系时，替代 routeContainersSelector）——
+  "routeItemSelectors": [".circuit_switch1 a", ".circuit_switch3 a"], // 每条路线的剧集选择器，与标题按序配对
+  "routeTitleProcess": {                                            // 可选：路线标题后处理（如去除角标数字）
+    "type": "string", "stringProcess": { "type": "replace", "search": "\\s*\\d+$", "replace": "", "flags": "g" }
+  },
+  "routeExcludeKeywords": ["已下线", "APP专线"],                     // 可选：路线标题命中任一关键词即整条跳过
   // —— 单路线 ——
   "containerSelector": ".module-play-list-content",                  // 列表容器（与上面二选一）
   // —— 公共 ——
@@ -525,7 +582,7 @@ play_from          → 顶层数组字段</code></pre>
     "title": "span"                                                  // 集名，如"第01集"
   }
 }</code></pre>
-<div class="note">单路线用 <code>containerSelector + itemSelector</code>；多路线用 <code>routeTitlesSelector + routeContainersSelector + itemSelector</code>，标题与容器按顺序配对。</div>
+<div class="note">单路线用 <code>containerSelector + itemSelector</code>；多路线用 <code>routeTitlesSelector + routeContainersSelector + itemSelector</code>，标题与容器按顺序配对；页签式页面（线路按钮与剧集组无父子关系）改用 <code>routeTitlesSelector + routeItemSelectors[]</code>，每条路线写一个选择器、与标题按序配对，必要时配 <code>routeTitleProcess</code> 清洗标题、<code>routeExcludeKeywords</code> 过滤无效路线。routeExcludeKeywords 同样适用于 JSON 模式（按 <code>jsonRouteTitleTemplate</code> 渲染出的标题过滤）。</div>
 <h3>JSON 模式：路线 + 选集接口</h3>
 <pre><code>"episodes": {
   "jsonRoutesPath": "play_from",                 // 详情响应中的路线数组路径，每项描述一条播放路线
@@ -546,6 +603,9 @@ play_from          → 顶层数组字段</code></pre>
 <p>结构即 VideoConfig：</p>
 <pre><code>// HTML 模式
 "recommends": {
+  "urlTemplate": "/hot/list.html",               // 可选：推荐独立页地址（相对拼 baseUrl 或绝对）；
+                                                // 不填=解析详情页本身；详情页无推荐区块、但站内有
+                                                // 热门列表/热门搜索页时可填它充当（listSelector 相对该页）
   "listSelector": "div.module-poster-items-base a.module-poster-item",
   "urlNeedBaseUrl": true,
   "enabledHttps": true,
@@ -559,6 +619,16 @@ play_from          → 顶层数组字段</code></pre>
   "enabledHttps": true,
   "jsonUrlTemplate": "{baseUrl}/api/videos/{id}/recommendations?limit=6"
 }</code></pre>
+<div class="note">JSON 模式<strong>必须</strong>配置 <code>jsonUrlTemplate</code>（不填则推荐恒为空，引擎不会从详情响应里找推荐）；HTML 模式默认仅用 <code>listSelector</code>（无 containerSelector）在详情页文档内选取，配置 <code>urlTemplate</code> 后改为独立请求该页解析（请求失败仅放弃推荐，不影响详情）。两种模板均支持 <code>{rand:最小,最大,步长}</code> 随机占位符（在区间内按步长随机取一个值，如 <code>{rand:0,200,10}</code> → 0/10/20/…/200），用于推荐页随机翻页，让每次进详情看到不同推荐。</div>
+<p>实战定位技巧：</p>
+<ul>
+  <li><strong>区块定位组合器</strong>：推荐卡片本身往往没有专属容器，可用标题文本 + 相邻组合器锁定区块，如 <code>div.title:contains(相关影片) + div div.card</code>（"标题为『相关影片』的 div 的下一个兄弟 div 内任意层级的 .card"）。注意详情页推荐卡片的类名经常与搜索结果卡片<strong>不同</strong>，不要照搬 search 的 itemSelectors，逐字段在详情页 HTML 里核实。</li>
+  <li><strong>多 tab 推荐区</strong>：有的站按题材分多个 tab 展示相关内容，多个 ul 中通常仅当前 tab 带 <code>current</code>/<code>active</code> 类——用 <code>.tabs ul.current li</code> 之类限定到首个 tab 即可，不必抓全部。</li>
+  <li><strong>POST 型推荐接口</strong>：JSON 模式支持 <code>method</code> + <code>body</code>（与搜索/详情同构，Connect-RPC 类接口可用），body 模板占位符取详情字段并做 JSON 转义，如 <code>{"videoId":"{video.id}","limit":6}</code>。</li>
+  <li><strong>独立推荐页</strong>：详情页没有推荐区块、但站内有现成的热门列表页或热门搜索页时，HTML 模式可配 <code>urlTemplate</code> 指向该页，让引擎单独请求并解析（listSelector/itemSelectors 相对该页 DOM）。若该页与本站搜索结果页同构（如同一搜索端点换参数），字段选择器可直接照搬 search；地址中的固定中文关键词可直接写 URL 编码后的形式（如 <code>searchText=%E8%A1%A5%E7%95%AA</code>），配合 <code>{rand:0,200,10}</code> 占位符还能在该热门页内随机翻页。</li>
+  <li><strong>由详情地址构造推荐页</strong>：HTML 模式 <code>urlTemplate</code> 的上下文含 <code>{link}</code>（当前详情页地址），并支持<strong>值变换占位符</strong> <code>{link#正则#替换}</code>（对详情地址做正则替换后拼入，<code>#</code> 分隔，正则失败回退原串）。站点推荐只出现在播放页（如 <code>/play/123-1-1.html</code>）而详情页是 <code>/show/123.html</code> 时，可写 <code>{link#^https?://[^/]+/show/(\d+)\.html$#/play/$1-0-0.html}</code> 把详情地址改写成播放页地址（参考 baimao）。</li>
+  <li><strong>无独立推荐端点的 JSON 站</strong>：详情响应只有 ID 数组、或根本没有相关字段时，可用「同分类列表」接口充当推荐——把详情的分类字段注入列表接口的过滤参数，如 <code>{baseUrl}/api/videos?page=1&amp;size=12&amp;categoryId={video.categoryId}</code>（字段名按站点实际支持的过滤参数核实，注意有的站不认识的参数会被静默忽略，务必对比有无参数的 total 是否变化）；列表响应结构则照搬 search 的 listSelector/itemSelectors。此法无法排除当前作品自身，可接受再使用。连可用的过滤参数都没有、详情页也无推荐区块时，留空跳过（推荐是可选能力）。</li>
+</ul>
 
 <h2 id="videourl">播放地址 videoUrl</h2>
 <p>选集拿到的 <code>url</code> 往往只是<strong>播放页/解析接口</strong>，<code>videoUrl</code> 负责把它换成真正可播放的直链。按 <code>pattern</code> 分四种：</p>
@@ -576,8 +646,8 @@ play_from          → 顶层数组字段</code></pre>
   </tr>
   <tr>
     <td><code>"json"</code></td>
-    <td>请求 <code>url</code>（JSON 接口），按路径取值</td>
-    <td><code>valuePath</code> = 播放地址 JSON 路径，默认 <code>data.url</code></td>
+    <td>请求播放地址接口（JSON），按路径取值</td>
+    <td><code>valuePath</code> = 播放地址 JSON 路径，默认 <code>data.url</code>；可选 <code>urlTemplate</code> 指定接口地址（见下）</td>
   </tr>
   <tr>
     <td><code>"link"</code></td>
@@ -593,8 +663,42 @@ play_from          → 顶层数组字段</code></pre>
 }</code></pre>
 <p>json 模式示例（接口站）：</p>
 <pre><code>"videoUrl": { "pattern": "json", "valuePath": "data.url" }</code></pre>
+<p>json 模式进阶——<code>urlTemplate</code>（可选）：播放接口地址与选集链接<strong>不是同一个</strong>时配置（如 Connect-RPC 站选集链接是 watch 页、播放接口是独立取流端点）。配置后引擎改为请求渲染后的模板地址（相对拼 baseUrl 或绝对），选集链接仅作 <code>{link}</code> 占位符上下文；配合 <code>body</code> 值变换占位符从链接中提取参数，配合 <code>login</code>（cookie 模式）携带登录态（参考 milimili 源）：</p>
+<pre><code>"videoUrl": {
+  "pattern": "json",
+  "urlTemplate": "/platform.v1.BangumiService/GetPlayUrl",
+  "method": "POST",
+  "body": '{"ep":"{link#^.*[?&]ep=(\\d+).*$#$1}","client":"web"}',
+  "valuePath": "data.playUrl"
+}</code></pre>
+<div class="note">选集链接形如 <code>https://&lt;站点&gt;/watch?ep=&lt;编号&gt;</code>，值变换占位符从中提取 ep 编号注入请求体；未登录时接口返回 401，错误消息"请先登录"会直接提示到播放页，引导用户去源列表长按登录。</div>
 <p>三种请求型 pattern 均支持旧版字符串 <code>postProcess</code>，共五种（按固定顺序生效）：<code>"substringBetween('start','end')"</code>、<code>"replaceAll('old','new')"</code>、<code>"base64Decode()"</code>（Base64 解码，UTF-8）、<code>"decodeUri()"</code>（URL 解码）、<code>"jsonDecode()"</code>（JSON 字符串解码，正确处理 <code>\/</code> 与 <code>\uXXXX</code> 中文转义——播放地址里含中文路径时用它，别用 replaceAll 删反斜杠）。典型组合——MacCMS 播放地址 <code>player_aaaa</code> 的 <code>encrypt=2</code> 加密：<code>"base64Decode();decodeUri()"</code>；<code>player_aaaa.url</code> 带转义：<code>"jsonDecode()"</code>。</p>
 <p><code>iframeSelector</code>（可选）：真实地址需要执行页面 JS 才能拿到时，填一段 JS，引擎会改用内置 WebView 加载播放页并注入执行，详见<a href="#webview-js">WebView JS 解析</a>。注意其生效前提是 pattern 解析出的地址是一个<strong>网页</strong>而非直链：JSON 源请配合 <code>"pattern": "link"</code>；HTML 源请让 <code>urlSelector</code> 提取播放器页地址（如 <code>iframe@src</code>）。</p>
+<h3>多步精准提取 steps（可选，优先于 pattern 生效）</h3>
+<p>播放地址藏在多层页面后时（播放页 → 播放器页 → 直链），可配 <code>steps</code> 数组做<strong>纯 HTTP 逐页请求+提取</strong>，无 WebView、无 hls.js 竞态：第一步输入为剧集链接，每步请求上一步结果页面并提取下一步地址，最后一步输出即播放地址。配置后<strong>优先于 pattern/urlSelector 生效</strong>（两种模式通用）。</p>
+<pre><code>"videoUrl": {
+  "steps": [
+    { "pattern": "selector", "urlSelector": "iframe.iframe@src" },   // 第1步：播放页取播放器 iframe 地址
+    { "pattern": "selector", "urlSelector": "#video@src",            // 第2步：播放器页取直链
+      "postProcess": "script:var r=String(result);return r.indexOf('http')===0?r:('https:'+r);" }
+  ]
+}</code></pre>
+<ul>
+  <li>每步 <code>pattern</code>：<code>"regex"</code>（<code>urlSelector</code>=正则，取捕获组 1）或 <code>"selector"</code>/缺省（<code>urlSelector</code>=<code>选择器@属性</code>）；</li>
+  <li>每步可配旧版字符串 <code>postProcess</code>（含 <code>script:</code> 前缀脚本，<code>result</code> 为输入），用于补协议头、解码等；脚本运行在内置 JS 引擎（完整 ES 标准库，可内联实现 Base64/AES 等算法）；</li>
+  <li><strong>请求指令</strong>：某步 <code>script:</code> 脚本 return 一个 <code>{"__request":true,...}</code> JSON 时，下一步<strong>不请求提取结果，而是按指令发起 HTTP 请求</strong>——链路中含 POST 表单接口（如解析器 api.php）、需带特定请求头的 GET 时用它：
+<pre><code>"postProcess": "script:var w=decodeURIComponent(result);return JSON.stringify({__request:true,method:'POST',url:'https://parser.example.com/api.php',fallbackUrl:'https://parser2.example.com/api.php',headers:{'content-type':'application/x-www-form-urlencoded','referer':'https://parser.example.com/'},body:'url='+encodeURIComponent(w)});"</code></pre>
+指令键：<code>url</code>（必填）、<code>method</code>（<code>POST</code>/<code>GET</code>，缺省 GET）、<code>body</code>（POST 请求体）、<code>headers</code>（附加请求头）、<code>fallbackUrl</code>（可选备用地址：主地址请求失败时改用它发同样请求，适合解析接口双域名站点）；指令后必须还有提取步骤（不能以指令结尾）；</li>
+  <li>每步页面获取失败（超时/卡流）会<strong>同地址自动重试一次</strong>；中间结果与最终结果会自动做非 ASCII 百分号编码；任一步提取失败即整体失败（报"第 N 步提取失败"）。</li>
+</ul>
+<h3>本地代理 proxy（可选）</h3>
+<p>直链流无法被原生播放器解复用时（如伪装成 PNG 图片的 TS 分片），可配本地代理代抓还原，仅显式配置的源生效：</p>
+<pre><code>"proxy": { "type": "tsStrip", "referer": "https://player.example.com/", "urlPattern": "\\.m3u8" }</code></pre>
+<ul>
+  <li><code>type</code> 目前仅 <code>"tsStrip"</code>：App 在本机起代理服务，代抓分片（带 <code>referer</code> 请求头，空串/缺省=不带）并剥离伪装头还原 TS；m3u8 播放列表同步改写走代理，<code>#EXT-X-KEY:</code>/<code>#EXT-X-MAP:</code> 行内的 URI 也一并改写——AES-128 加密流的密钥/初始化段防盗链站点（密钥直连 403）配 <code>referer</code> 即可代抓，无 KEY/MAP 行的播放列表行为不变；找不到 TS 同步头的分片（如 AES 密文分片）原样透传，不影响加密流剥壳；</li>
+  <li><code>urlPattern</code>（可选）：正则，仅当<strong>最终播放地址匹配时才走代理</strong>（如 <code>"\\.m3u8"</code> 只包装 m3u8、mp4 直链保持直连——同站直链与 m3u8 混出、或 mp4 根本无需剥壳时必配，避免 mp4 被包进 .m3u8 代理路径导致无法播放）；缺省=总是包装；</li>
+  <li>代理自动给无后缀 URL 补 <code>.m3u8</code>/<code>.ts</code> 后缀（AVPlayer 按扩展名识别格式）；包装失败自动回退原始地址。</li>
+</ul>
 
 <h2 id="postprocess">字段后处理</h2>
 <p>任何 <code>itemSelectors</code> 字段、详情封面（<code>coverPostProcess</code>）、HTML 文本/属性选择器都可以挂 <code>postProcess</code>，类型是 <code>ProcessConfig</code>：</p>
@@ -694,7 +798,7 @@ play_from          → 顶层数组字段</code></pre>
 <p>编辑页顶部工具栏：</p>
 <ul>
   <li>第一行：<strong>启用</strong>（对应 <code>enabled</code>）与<strong>源模式</strong>（HTML / JSON，对应 <code>sourceType</code>）。切换源模式后，下面各 Tab 输入框的标题和提示文案会随之切换（CSS 选择器 ↔ JSON 模板），不确定怎么填时先切换模式看提示；</li>
-  <li>第二行：<strong>首页</strong>（对应 <code>defaultSource</code>，勾选后该源成为应用启动时的首页数据源）与<strong>周表</strong>（勾选后该源立即成为周表 Tab 的数据源，无需保存；取消勾选则清除周表源，可在设置 → 周表数据源 重新选择）；</li>
+  <li>第二行：<strong>首页</strong>（对应 <code>defaultSource</code>，勾选后该源成为应用启动时的首页数据源）与<strong>周表</strong>（勾选后该源立即成为周表 Tab 的数据源，无需保存；取消勾选则清除周表源，可在设置 → 周表数据源 重新选择）与<strong>广告过滤</strong>（对应 <code>adFilter</code>，勾选=该源参与 m3u8 广告拦截、跟随全局开关；取消勾选=该源强制不过滤）；</li>
   <li><strong>保存</strong>：至少填写 <code>Key</code> 和<strong>名称</strong>才能保存；<strong>保存后立即生效，无需重新导入</strong>；</li>
   <li>有未保存修改时返回会弹出"确认退出"提醒。</li>
 </ul>
@@ -706,6 +810,7 @@ play_from          → 顶层数组字段</code></pre>
   <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
   <tr><td>Key(请确保唯一性)</td><td><code>key</code></td><td>唯一标识，建议 <code>key_</code>+拼音/缩写，如 <code>key_myvideo</code></td></tr>
   <tr><td>基础URL</td><td><code>baseUrl</code></td><td>站点根地址，如 <code>https://www.example.com/</code></td></tr>
+  <tr><td>User-Agent(可选)</td><td><code>userAgent</code></td><td>源级 UA，WebView 嗅探播放页时生效；站点按 UA 分发不同页面（移动版跳 APP 等）时填桌面 Chrome UA，留空用系统默认</td></tr>
   <tr><td>名称</td><td><code>name</code></td><td>显示名称（同时联动编辑页标题栏）</td></tr>
   <tr><td>版本</td><td><code>version</code></td><td>数字格式 x.x.x，每次修改递增</td></tr>
   <tr><td>作者</td><td><code>author</code></td><td>源作者，导出/导入时随源携带</td></tr>
@@ -717,12 +822,13 @@ play_from          → 顶层数组字段</code></pre>
 <table>
   <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
   <tr><td>请求头列表</td><td><code>parserConfig.requestHeaders</code></td><td>每行一个，格式 <code>名称: 值</code>，如 <code>Accept: application/json</code></td></tr>
-  <tr><td>启用账号登录（开关）</td><td><code>login</code></td><td>打开后出现 6 个输入框，见下</td></tr>
+  <tr><td>启用账号登录（开关）</td><td><code>login</code></td><td>打开后出现 7 个输入框，见下</td></tr>
+  <tr><td>登录类型</td><td><code>login.type</code></td><td><code>api</code>（默认）=登录响应 JSON 中取凭证；<code>cookie</code>=捕获登录响应 Set-Cookie 作会话凭证（填 <code>cookie</code> 或 <code>api</code>，其它值按 api 处理）</td></tr>
   <tr><td>登录接口地址</td><td><code>login.loginUrl</code></td><td>如 <code>/api/auth/login</code>，相对路径自动拼基础URL</td></tr>
   <tr><td>用户名字段 / 密码字段</td><td><code>usernameField</code> / <code>passwordField</code></td><td>请求体字段名，留空默认 <code>username</code> / <code>password</code></td></tr>
-  <tr><td>凭证JSON路径</td><td><code>login.tokenPath</code></td><td>默认 <code>data.token</code></td></tr>
-  <tr><td>凭证请求头名 / 凭证请求头模板</td><td><code>authHeaderName</code> / <code>authValueTemplate</code></td><td>默认 <code>Authorization</code> / <code>{token}</code>；需要 Bearer 时填 <code>Bearer {token}</code></td></tr>
-  <tr><td>额外请求体JSON(可选)</td><td><code>login.extraBody</code></td><td>登录请求体的额外固定字段，JSON 文本如 <code>{"device":"web"}</code>；<strong>填错会被静默忽略</strong>，留空清除</td></tr>
+  <tr><td>凭证JSON路径</td><td><code>login.tokenPath</code></td><td>默认 <code>data.token</code>；cookie 模式下不适用（凭证来自响应 Set-Cookie）</td></tr>
+  <tr><td>凭证请求头名 / 凭证请求头模板</td><td><code>authHeaderName</code> / <code>authValueTemplate</code></td><td>默认 <code>Authorization</code> / <code>{token}</code>；需要 Bearer 时填 <code>Bearer {token}</code>；cookie 模式填 <code>Cookie</code> / <code>{token}</code></td></tr>
+  <tr><td>额外请求体JSON(可选)</td><td><code>login.extraBody</code></td><td>登录请求体的额外固定字段，JSON 文本如 <code>{"device":"web"}</code>、<code>{"remember":true}</code>（布尔值可填）；<strong>填错会被静默忽略</strong>，留空清除</td></tr>
 </table>
 
 <h3>"搜索"Tab → search</h3>
@@ -732,13 +838,14 @@ play_from          → 顶层数组字段</code></pre>
   <tr><td>启用HTTPS（复选框）</td><td><code>search.videos.enabledHttps</code></td><td>把取到的 http:// 升级为 https://</td></tr>
   <tr><td>搜索链接模板</td><td><code>search.videos.urlTemplate</code></td><td>支持 <code>{keyword}</code>（自动URL编码）与 <code>{page}</code>；HTML 如 <code>/search?q={keyword}&page={page}</code>，JSON 如 <code>/api/videos/search?q={keyword}&page={page}</code></td></tr>
   <tr><td>列表选择器 / 列表JSON路径</td><td><code>search.videos.listSelector</code></td><td>HTML=条目 CSS 选择器；JSON=列表路径如 <code>data.list</code></td></tr>
+  <tr><td>请求方式 + POST请求体模板 <span class="tag">仅JSON</span></td><td><code>search.videos.method / body</code></td><td>下拉 GET/POST（选 GET 即清除字段，等价未配置）；选 POST 展开 POST请求体模板，占位符 <code>{keyword}</code>（自动 JSON 转义）/<code>{page}</code>，用于 Connect-RPC 等 POST 型接口，详见<a href="#template-syntax">POST 请求</a>一节</td></tr>
   <tr><td>列表容器选择器(可选) <span class="tag">仅HTML</span></td><td><code>search.videos.containerSelector</code></td><td>整页文档中先定位列表容器，再用列表选择器在容器内找条目</td></tr>
   <tr><td>搜索结果配置 → 番剧名</td><td><code>itemSelectors.title</code></td><td>HTML=选择器，JSON=模板 <code>{title}</code></td></tr>
   <tr><td>搜索结果配置 → 封面链接</td><td><code>itemSelectors.imgUrl</code></td><td>HTML 如 <code>img@data-original</code>；JSON 如 <code>{cover_url}</code></td></tr>
   <tr><td>搜索结果配置 → 番剧链接</td><td><code>itemSelectors.url</code></td><td>详情页地址；JSON 如 <code>{baseUrl}/api/videos/{video_id}</code></td></tr>
   <tr><td>搜索结果配置 → 剧集数</td><td><code>itemSelectors.episode</code></td><td>角标备注；JSON 如 <code>{remarks}</code></td></tr>
   <tr><td>字段标题行右侧「后处理」复选框 + XX处理方式（下拉）</td><td><code>itemSelectors.&lt;字段&gt;.postProcess</code></td><td>每个 itemSelectors 字段（番剧名/封面链接/番剧链接/剧集数，单集标题/链接同理）标题行右侧带「后处理」勾选框：勾选后展开「XX处理方式」下拉，共 10 种：字符串替换 / 正则提取 / 截取片段 / 分割取段 / 自定义脚本 / 表达式 / 条件取值 / 值映射 / 模板拼接 / JSON(高级)；选择后按类型展开参数输入行（如正则、替换值、脚本代码、每行“旧值=新值”的映射表等），切换类型自动填入该类型初始配置；取消勾选即移除后处理。pipeline 等复杂结构请选「JSON(高级)」直接粘贴 ProcessConfig。<strong>配置错误会被静默忽略</strong>（保留原值），自定义脚本变量为 <code>result</code>/<code>context</code></td></tr>
-  <tr><td>高级字段（搜索页签） <span class="tag">仅HTML</span></td><td><code>search.captcha</code></td><td>「高级字段」开关，开启时预填 dsn2 模板常见默认值并展开 6 项：验证页判定选择器（<code>detectSelector</code>）、验证码图片选择器（<code>imageUrlSelector</code>，selector@attr，留空且判定元素是 img 时自动取其 src）、图片拼接基础URL（<code>imageNeedBaseUrl</code>，开关）、防缓存参数名（<code>imageCacheBustParam</code>，可选）、校验提交地址模板（<code>verifyUrlTemplate</code>，<code>{code}</code>=用户输入）、成功标识子串（<code>successContains</code>，可选）；关闭即移除整节，详见 <a href="#search">搜索 search</a> 一节</td></tr>
+  <tr><td>高级字段（搜索页签） <span class="tag">仅HTML</span></td><td><code>search.captcha</code></td><td>「高级字段」开关，开启时预填 dsn2 模板常见默认值并展开 7 项：验证页判定选择器（<code>detectSelector</code>）、验证码图片选择器（<code>imageUrlSelector</code>，selector@attr，留空且判定元素是 img 时自动取其 src）、图片拼接基础URL（<code>imageNeedBaseUrl</code>，开关）、防缓存参数名（<code>imageCacheBustParam</code>，可选）、图片地址模板兜底（<code>imageUrlTemplate</code>，可选——页面无验证码 img 元素（图片由 JS 注入）或选择器取不到时改用此固定地址，相对基础URL或绝对）、校验提交地址模板（<code>verifyUrlTemplate</code>，<code>{code}</code>=用户输入）、成功标识子串（<code>successContains</code>，可选）；关闭即移除整节，详见 <a href="#search">搜索 search</a> 一节</td></tr>
 </table>
 
 <h3>"主页"Tab → homepage</h3>
@@ -749,7 +856,8 @@ play_from          → 顶层数组字段</code></pre>
   <tr><td>列表选择器 / 列表JSON路径</td><td><code>homepage.banner.listSelector</code></td><td>同搜索；JSON 支持 <code>data.list.0.videos</code> 嵌套路径</td></tr>
   <tr><td>列表容器选择器(可选) <span class="tag">仅HTML</span></td><td><code>homepage.banner.containerSelector</code></td><td>整页文档中先定位轮播容器，再在其中找条目</td></tr>
   <tr><td>轮播视频配置 / 轮播字段模板</td><td><code>homepage.banner.itemSelectors</code></td><td>字段同"搜索结果配置"5 项</td></tr>
-  <tr><td>分类卡片 → 添加卡片 / 卡片N / 删除</td><td><code>homepage.category.cards[]</code></td><td>两种模式都可用。每张卡片：标题、接口地址(JSON)/页面地址(HTML)、更多页地址(可选，支持 <code>{page}</code>)、列表JSON路径/列表选择器、显示条数上限 <code>maxItems</code>(可选)、拼接基础URL与启用HTTPS开关、字段模板；卡片失败自动重试一次</td></tr>
+  <tr><td>请求方式 + POST请求体模板（轮播） <span class="tag">仅JSON</span></td><td><code>homepage.banner.method / body</code></td><td>同搜索；轮播请求体为固定 JSON（无占位符）</td></tr>
+  <tr><td>分类卡片 → 添加卡片 / 卡片N / 删除</td><td><code>homepage.category.cards[]</code></td><td>两种模式都可用。每张卡片：标题、接口地址(JSON)/页面地址(HTML)、更多页地址(可选，支持 <code>{page}</code>)、列表JSON路径/列表选择器、显示条数上限 <code>maxItems</code>(可选)、拼接基础URL与启用HTTPS开关、字段模板、请求方式+POST请求体模板（仅JSON，<code>cards[].method / body</code>，固定请求体）；卡片失败自动重试一次</td></tr>
   <tr><td>分类配置(同页,未配置卡片时生效) <span class="tag">仅HTML</span></td><td><code>category.title / titles / moreUrl / videoLists</code></td><td>标题选择器、标题列表选择器、更多链接选择器、视频列表容器——从首页 DOM 解析板块</td></tr>
   <tr><td>更多链接拼接URL / 视频拼接基础URL / 启用HTTPS（复选框）<span class="tag">仅HTML</span></td><td><code>category.moreUrlNeedBaseUrl</code> / <code>category.videos.urlNeedBaseUrl</code> / <code>category.videos.enabledHttps</code></td><td>更多链接与板块视频链接是否拼接基础URL、http 升级 https（"更多"分页页同样生效）</td></tr>
   <tr><td>板块视频列表选择器 / 板块视频容器选择器(可选) <span class="tag">仅HTML</span></td><td><code>category.videos.listSelector</code> / <code>category.videos.containerSelector</code></td><td>板块内单个条目的选择器；容器选择器用于"更多"页等整页文档（先定位容器再找条目）</td></tr>
@@ -762,6 +870,7 @@ play_from          → 顶层数组字段</code></pre>
   <tr><td>拼接基础URL / 启用HTTPS（复选框）</td><td><code>schedule.urlNeedBaseUrl</code> / <code>schedule.enabledHttps</code></td><td>条目链接为相对路径时勾选拼接；http:// 升级 https://（编辑时自动创建 <code>schedule</code> 节点）</td></tr>
   <tr><td>地址模板</td><td><code>schedule.urlTemplate</code></td><td><code>{weekday}</code> 为星期占位符（1=周一..7=周日），相对路径拼基础URL，如 <code>/api/index/weekday?weekday={weekday}</code></td></tr>
   <tr><td>列表选择器 / 列表JSON路径</td><td><code>schedule.listSelector</code></td><td>HTML=条目 CSS 选择器；JSON=当天列表路径如 <code>data.list.0.videos</code></td></tr>
+  <tr><td>请求方式 + POST请求体模板 <span class="tag">仅JSON</span></td><td><code>schedule.method / body</code></td><td>同搜索；请求体占位符 <code>{weekday}</code>（1-7）/ <code>{weekday0}</code>（0-6）</td></tr>
   <tr><td>星期区块选择器 / 星期标题选择器(可选) <span class="tag">仅HTML</span></td><td><code>schedule.weekdayBlocksSelector</code> / <code>schedule.weekdayTitleSelector</code></td><td>首页多区块形态：所有星期区块容器 + 区块内星期标题元素（如 <code>.anime-schedule</code> + <code>h4</code>），按标题文本定位当天区块</td></tr>
   <tr><td>周表视频配置 / 周表字段模板</td><td><code>schedule.itemSelectors</code></td><td>字段同"搜索结果配置"（番剧名/封面链接/番剧链接/剧集数 + 扩展字段）</td></tr>
 </table>
@@ -769,14 +878,18 @@ play_from          → 顶层数组字段</code></pre>
 <h3>"详情"Tab → detail</h3>
 <table>
   <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
-  <tr><td>影片详情 / 详情字段模板（6 项）</td><td><code>detail.titleSelector / descSelector / coverSelector / categorySelector / updateTimeSelector / dataPath</code></td><td>HTML=CSS 选择器；JSON=模板（如 <code>{title}</code>、<code>{categories}</code>），后 3 项可选；<code>dataPath</code> 为 JSON 专属（详情数据路径，默认 <code>data</code>）；导演/声优等扩展信息走「更多字段」</td></tr>
+  <tr><td>影片详情 / 详情字段模板（6 项）</td><td><code>detail.titleSelector / descSelector / coverSelector / categorySelector / updateTimeSelector / dataPath</code></td><td>HTML=CSS 选择器；JSON=模板（如 <code>{title}</code>、<code>{categories}</code>），后 3 项可选。HTML 模式的标题/描述选择器右侧带「后处理」复选框：勾选后转为 <code>{ selector, postProcess }</code> 对象形态并展开后处理表单（主输入框仍只编辑选择器部分），选择器支持 <code>selector@attr</code> 取属性（如 <code>meta[name=description]@content</code>）；JSON 模式为纯模板输入。<code>dataPath</code> 为 JSON 专属（详情数据路径，默认 <code>data</code>；填 <code>.</code> 表示响应根对象）；导演/声优等扩展信息走「更多字段」</td></tr>
+  <tr><td>详情端点地址模板(可选) <span class="tag">仅JSON</span></td><td><code>detail.urlTemplate</code></td><td>详情请求端点，占位符 <code>{link}</code> 为条目 url；留空直接请求条目 url。用于条目 url 仅携带业务 ID、详情需请求固定端点（如 Connect-RPC <code>GetBangumi</code>，配合 POST 请求体 <code>"id":"{link}"</code>）的接口</td></tr>
   <tr><td>封面后处理JSON(可选) <span class="tag">仅JSON</span></td><td><code>detail.coverPostProcess</code></td><td>ProcessConfig JSON 文本，如把封面地址改写为图片代理</td></tr>
+  <tr><td>请求方式 + POST请求体模板（详情） <span class="tag">仅JSON</span></td><td><code>detail.method / body</code></td><td>详情接口为 POST 型时配置；请求体占位符 <code>{link}</code>（搜索结果里存的详情地址/ID）</td></tr>
   <tr><td>更多字段（详情页签）</td><td><code>detail.extra</code></td><td>开关 + 扩展字段组（播放量/年份/月份/导演/声优/标签），字段同"可选扩展字段"一节；HTML=CSS 选择器、JSON=模板，支持后处理；全部清空后自动移除该节点</td></tr>
-  <tr><td>剧集配置（HTML 4 项）</td><td><code>episodes.routeTitlesSelector / routeContainersSelector / containerSelector / itemSelector</code></td><td>多路线标题选择器(可选)、多路线剧集选择器(可选)、单路线剧集选择器(仅单路线时必选)、剧集列表选择器</td></tr>
-  <tr><td>选集配置(JSON)（4 项）</td><td><code>episodes.jsonRoutesPath / jsonRouteTitleTemplate / jsonSectionsUrlTemplate / jsonListPath</code></td><td>路线数组路径（如 <code>play_from</code>；省略则单路线模式，详情数据自身为唯一路线）、路线标题模板、选集接口地址模板、选集列表JSON路径（默认 <code>data.list</code>）</td></tr>
+  <tr><td>剧集配置（HTML 7 项）</td><td><code>episodes.routeTitlesSelector / routeContainersSelector / routeItemSelectors / routeTitleProcess / routeExcludeKeywords / containerSelector / itemSelector</code></td><td>多路线标题选择器(可选)、多路线剧集选择器(可选)、各路线剧集选择器(可选，逗号分隔，配 routeTitlesSelector 使用)、路线标题后处理(可选开关+表单，如去除按钮角标数字)、路线排除关键词(可选，逗号分隔)、单路线剧集选择器(仅单路线时必选)、剧集列表选择器</td></tr>
+  <tr><td>选集配置(JSON)（5 项）</td><td><code>episodes.jsonRoutesPath / jsonRouteTitleTemplate / routeExcludeKeywords / jsonSectionsUrlTemplate / jsonListPath</code></td><td>路线数组路径（如 <code>play_from</code>；省略则单路线模式，详情数据自身为唯一路线）、路线标题模板、路线排除关键词(可选)、选集接口地址模板、选集列表JSON路径（默认 <code>data.list</code>）</td></tr>
+  <tr><td>请求方式 + POST请求体模板（选集） <span class="tag">仅JSON</span></td><td><code>detail.episodes.method / body</code></td><td>选集接口为 POST 型时配置；请求体占位符为详情字段点分路径（与选集接口地址模板同上下文）</td></tr>
   <tr><td>单集剧集配置 / 单集字段模板</td><td><code>episodes.itemSelectors</code></td><td>只有 标题、链接 两项；HTML 如 <code>@href</code> + <code>span</code>，JSON 如 <code>{baseUrl}/api/v2/sections/{id}/play-url</code></td></tr>
   <tr><td>拼接基础URL / 启用HTTPS（复选框）</td><td><code>recommends.urlNeedBaseUrl</code> / <code>recommends.enabledHttps</code></td><td>推荐项链接为相对路径时勾选拼接；http 升级 https（两种模式都有）</td></tr>
-  <tr><td>推荐配置</td><td><code>recommends.listSelector</code>（JSON 另有 <code>jsonUrlTemplate</code>）</td><td>HTML=推荐列表选择器；JSON=推荐接口地址模板 + 推荐列表JSON路径</td></tr>
+  <tr><td>推荐配置</td><td><code>recommends.urlTemplate</code>（HTML，另有 <code>listSelector</code>）/ <code>recommends.jsonUrlTemplate</code>（JSON）</td><td>HTML=推荐独立页地址（留空=详情页本身；支持 <code>{link}</code> 当前详情地址与值变换占位符 <code>{link#正则#替换}</code>，可把详情地址改写成播放页等地址）+ 推荐列表选择器；JSON=推荐接口地址模板 + 推荐列表JSON路径；两者均支持 <code>{rand:最小,最大,步长}</code> 随机翻页占位符</td></tr>
+  <tr><td>请求方式 + POST请求体模板（推荐） <span class="tag">仅JSON</span></td><td><code>detail.recommends.method / body</code></td><td>推荐接口为 POST 型时配置；请求体占位符为详情字段点分路径（与推荐接口地址模板同上下文）</td></tr>
   <tr><td>推荐番剧配置 / 推荐字段模板</td><td><code>recommends.itemSelectors</code></td><td>字段同"搜索结果配置"</td></tr>
 </table>
 
@@ -787,7 +900,9 @@ play_from          → 顶层数组字段</code></pre>
   <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
   <tr><td>解析模式（第一行）</td><td><code>videoUrl.pattern</code></td><td>下拉：<strong>JSON接口</strong>（请求选集链接，按路径取值）/ <strong>链接透传</strong>（选集链接直接作为播放页地址）</td></tr>
   <tr><td>播放地址JSON路径</td><td><code>videoUrl.valuePath</code></td><td>默认 <code>data.url</code>；仅在"JSON接口"模式显示</td></tr>
+  <tr><td>播放接口地址模板(可选)</td><td><code>videoUrl.urlTemplate</code></td><td>仅在"JSON接口"模式显示：播放接口地址与选集链接不同源时填（相对拼基础URL或绝对），留空=直接请求选集链接；占位符 <code>{link}</code>（选集链接），支持 <code>{link#正则#替换}</code> 值变换</td></tr>
   <tr><td>后处理</td><td><code>videoUrl.postProcess</code></td><td>旧版字符串：<code>substringBetween('a','b')</code> / <code>replaceAll('old','new')</code> / <code>base64Decode()</code> / <code>decodeUri()</code>（可组合）；仅在"JSON接口"模式显示（透传模式引擎不执行后处理）</td></tr>
+  <tr><td>请求方式 + POST请求体模板 <span class="tag">仅JSON接口</span></td><td><code>videoUrl.method / body</code></td><td>播放地址接口为 POST 型时配置；请求体占位符 <code>{link}</code>（剧集链接，自动 JSON 转义），支持 <code>{link#正则#替换}</code> 值变换</td></tr>
   <tr><td>内嵌视频解析JS(可选)</td><td><code>videoUrl.iframeSelector</code></td><td>仅在"链接透传"模式显示：选集链接作为播放页在 WebView 打开后执行此 JS，需返回真实直链（<code>ERR_</code> 开头表示失败），详见<a href="#webview-js">WebView JS 解析</a></td></tr>
 </table>
 <p><strong>HTML 模式</strong>：</p>
@@ -797,6 +912,12 @@ play_from          → 顶层数组字段</code></pre>
   <tr><td>播放链接选择器 / 播放链接正则</td><td><code>videoUrl.urlSelector</code></td><td>随解析模式切换：选择器模式填 <code>选择器@属性</code> 如 <code>video@src</code>；正则模式填正则表达式，如 <code>"url":"([^"]+)"</code>（注意 JSON 转义）</td></tr>
   <tr><td>后处理</td><td><code>videoUrl.postProcess</code></td><td>同上</td></tr>
   <tr><td>内嵌视频选择器(执行JS，最终需返回播放链接)</td><td><code>videoUrl.iframeSelector</code></td><td>选择器提取到的是播放器页地址（如 <code>iframe@src</code>）时，在该页内执行此 JS 获取真实直链，详见<a href="#webview-js">WebView JS 解析</a></td></tr>
+</table>
+<p><strong>多步提取 / 本地代理（两种模式通用，位于视频 Tab 底部）</strong>：</p>
+<table>
+  <tr><th>界面字段</th><th>对应配置</th><th>填写说明</th></tr>
+  <tr><td>多步提取(可选) → 添加步骤 / 步骤N</td><td><code>videoUrl.steps[]</code></td><td>步骤卡片可增删、上移/下移调序；每步：提取方式（CSS选择器 / 正则表达式，对应 <code>steps[].pattern</code>）、提取表达式（<code>urlSelector</code>，第一步输入为剧集链接）、后处理(可选，旧版字符串指令 + 快捷片段按钮；<code>script:</code> 脚本可 return <code>{"__request":true,...}</code> 请求指令，POST 表单接口/带 Referer 的 GET/双域名备用地址在脚本里写)；配置后优先于上方解析模式生效；步骤页获取失败自动同地址重试一次</td></tr>
+  <tr><td>本地代理(可选) → 启用TS剥壳代理</td><td><code>videoUrl.proxy</code></td><td>开关开启后展开两个输入框：代抓Referer(可选)（对应 <code>proxy.referer</code>，留空=不带）、代理URL过滤(可选)（对应 <code>proxy.urlPattern</code> 正则，仅匹配的最终地址走代理，留空=总是包装）；用于伪装图片壳 TS 分片无法直连的站点</td></tr>
 </table>
 <div class="note">推荐工作流：先在应用内把能填的都填完保存测试。itemSelectors 字段级的 postProcess（含单集标题/链接、详情封面）已支持在编辑页勾选后以表单方式编辑（类型下拉 + 参数行）；仍遇编辑页不支持的能力时（如 pipeline 嵌套），用「JSON(高级)」或“长按卡片 → 复制视频源”导出 JSON，在电脑上改完导入。</div>
 

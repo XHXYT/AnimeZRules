@@ -1,0 +1,112 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-10-04",
+  "sources": [
+    {
+      "key": "key_mgnacg",
+      "version": "1.0.0",
+      "name": "橘子动漫",
+      "group": "动漫",
+      "baseUrl": "https://www.mgnacg.com",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      "enabled": true,
+      "priority": 23,
+      "description": "橘子动漫 mgnacg.com，搜索需图片验证码",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/search/-------------/?wd={keyword}",
+            "listSelector": "div.public-list-box.search-box",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.public-list-exp@href",
+              "imgUrl": "img.gen-movie-img@data-src",
+              "title": ".thumb-txt",
+              "episode": ".public-list-prb"
+            }
+          },
+          "captcha": {
+            "detectSelector": "img.ds-verify-img",
+            "imageUrlSelector": "img.ds-verify-img@src",
+            "imageNeedBaseUrl": true,
+            "imageCacheBustParam": "r",
+            "verifyUrlTemplate": "/index.php/ajax/verify_check?type=search&verify={code}",
+            "successContains": "\"code\":1"
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "",
+            "listSelector": "div.title:contains(剧场版) + div div.public-list-box",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.public-list-exp@href",
+              "imgUrl": "img.gen-movie-img@data-src",
+              "title": ".time-title",
+              "episode": ".public-list-prb"
+            }
+          },
+          "category": {
+            "title": "h4",
+            "titles": "div.title:contains(当季新番), div.title:contains(最近更新), div.title:contains(BD动漫), div.title:contains(剧场版)",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "div.flex.wrap.border-box.public-r",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "div.public-list-box",
+              "containerSelector": "div.public-r",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": "a.public-list-exp@href",
+                "imgUrl": "img.gen-movie-img@data-src",
+                "title": "a.public-list-exp@title",
+                "episode": ".public-list-prb"
+              }
+            }
+          }
+        },
+        "detail": {
+          "titleSelector": "h3.slide-info-title",
+          "descSelector": "#height_limit",
+          "coverSelector": ".detail-pic img@data-src",
+          "episodes": {
+            "routeTitlesSelector": ".anthology-tab .swiper-slide",
+            "routeContainersSelector": "ul.anthology-list-play",
+            "routeExcludeKeywords": [
+              "已下线"
+            ],
+            "itemSelector": "li",
+            "itemSelectors": {
+              "url": "a@href",
+              "title": "a"
+            }
+          },
+          "recommends": {
+            "listSelector": "div.title:contains(相关影片) + div div.public-list-box",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.public-list-exp@href",
+              "imgUrl": "img.gen-movie-img@data-src",
+              "title": "a.public-list-exp@title",
+              "episode": ".public-list-prb"
+            }
+          }
+        },
+        "videoUrl": {
+          "pattern": "regex",
+          "urlSelector": "player_aaaa=({.*?})</script>",
+          "postProcess": "script:var p=JSON.parse(result);var m={'2_':'/cloudplay/?url=','5_':'/cloudplay/yp2.php?url=','6_':'/cloudplay/yp3.php?url=','4_':'/cloudplay/ccxl.php?url=','3_':'/muiplayer/?url='};return 'https://play.mknacg.top:8585'+(m[p.from]||'/cloudplay/?url=')+p.url;",
+          "iframeSelector": "(function(){function L(m){try{console.log('[MGP] '+m);}catch(e){}}function probe(tag){try{L(tag+' href='+location.href);var hasCfg=(typeof config!=='undefined'&&config)?'yes':'no';var cu='';var vk='';var nx='';if(typeof config!=='undefined'&&config){cu=String(config.url||'');vk=String(config.vkey||'');}L(tag+' config='+hasCfg+' url.len='+cu.length+' url='+cu.substring(0,60)+' vkey='+vk);var mv=document.querySelector('meta[name=viewport]');var mc=document.querySelector('meta[charset]');nx='vp='+(mv?mv.id:'NONE')+' cs='+(mc?mc.id:'NONE');L(tag+' meta '+nx);L(tag+' typeof decrypt='+(typeof decrypt)+' typeof CryptoJS='+(typeof CryptoJS)+' typeof $='+(typeof $));if(typeof decrypt==='function'&&cu){var d='';try{d=decrypt(cu);}catch(e){L(tag+' decrypt threw: '+e);}L(tag+' decrypt.len='+(d?d.length:0)+' val='+String(d).substring(0,100));}}catch(e){L(tag+' probe err '+e);}}function grab(){try{if(typeof decrypt==='function'&&typeof config!=='undefined'&&config&&config.url){var u=decrypt(config.url);if(typeof u=='string'&&u.indexOf('http')==0)return u;}}catch(e){}return '';}function post(u){try{window.animeBridge.onLink(u);}catch(e){}}probe('t0');var r=grab();if(r){L('sync hit');return r;}var n=0;var iv=setInterval(function(){var x=grab();if(x){clearInterval(iv);L('async hit n='+n);post(x);}if(n==3||n==10||n==30){probe('t'+n);}n++;if(n>=200)clearInterval(iv);},300);return 'PENDING';})()"
+        }
+      },
+      "update_time": "2026-10-06"
+    }
+  ]
+}

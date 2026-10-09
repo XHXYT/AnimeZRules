@@ -6,15 +6,29 @@ AnimeZ 规则仓库 —— 为 [AnimeZ](https://github.com/XHXYT/AnimeZ) 编写�
 
 ## 可用规则
 
+<!-- sources-table:start -->
 | 规则 | 类型 | 说明 | 文件 |
 |------|------|------|------|
 | 番茄动漫 | HTML | www.fqdm.cc，模板站经典结构 | [fqdm_data_source.json](sources/fqdm_data_source.json) |
 | 饭团动漫 | HTML | www.acgfta.com | [acgfta_data_source.json](sources/acgfta_data_source.json) |
-| AGE 动漫 | HTML | www.agedm.io | [age_sources_config.json](sources/age_sources_config.json) |
-| 次元城动画 | JSON API | www.cycani.org，接口源示例（播放需账号登录） | [cycani_data_source.json](sources/cycani_data_source.json) |
-| tvtfun | JSON + WebView | www.tvtfun.net，播放可能需手动辅助（应用内自动尝试两次后弹出） | [tvtfun_data_source.json](sources/tvtfun_data_source.json) |
-| 稀饭动漫 | JSON + WebView | next.xifanacg.com（接口 api.xifanacg.com），Supabase PostgREST 接口源（选集内嵌详情接口） | [xifan_data_source.json](sources/xifan_data_source.json) |
-| girigirilove | HTML + 搜索验证码 | ani.girigirilove.com，MacCMS 模板站（播放地址 base64 + URL 解码，搜索需输入图片验证码） | [girigirilove_data_source.json](sources/girigirilove_data_source.json) |
+| AGE动漫 | HTML + WebView | www.agedm.io | [age_sources_config.json](sources/age_sources_config.json) |
+| 次元城动画 | JSON + 登录 | www.cycani.org，接口源示例（播放需账号登录） | [cycani_data_source.json](sources/cycani_data_source.json) |
+| 天天番 | JSON + WebView | www.tvtfun.net，播放可能需手动辅助（应用内自动尝试两次后弹出） | [tvtfun_data_source.json](sources/tvtfun_data_source.json) |
+| 稀饭动漫 | JSON + WebView | next.xifanacg.com Supabase PostgREST 接口源（选集内嵌详情接口） | [xifan_data_source.json](sources/xifan_data_source.json) |
+| girigirilove | HTML + 搜索验证码 | ani.girigirilove.com，MacCMS 模板站（搜索需输入图片验证码） | [girigirilove_data_source.json](sources/girigirilove_data_source.json) |
+| 七色番 | HTML + WebView | www.7sefun.top， | [7sefun_data_source.json](sources/7sefun_data_source.json) |
+| 月之祠 | HTML | www.moonci.com | [moonci_data_source.json](sources/moonci_data_source.json) |
+| Aki动漫 | HTML | www.akianime.cc | [akianime_data_source.json](sources/akianime_data_source.json) |
+| 橘子动漫 | HTML + WebView + 搜索验证码 | www.mgnacg.com，搜索需图片验证码 | [mgnacg_data_source.json](sources/mgnacg_data_source.json) |
+| MuteFun | HTML + WebView + 搜索验证码 | www.2kdm.com，搜索需图片验证码 | [mutefun_data_source.json](sources/mutefun_data_source.json) |
+| 黑猫动漫 | HTML + WebView | www.baimaodm.com | [baimao_data_source.json](sources/baimao_data_source.json) |
+| 动漫巴士 | HTML + WebView | dmbus.cc | [dm84_data_source.json](sources/dm84_data_source.json) |
+| MX动漫 | HTML | www.dcc3.com，| [mxdm_data_source.json](sources/mxdm_data_source.json) |
+| 打驴动漫 | HTML + steps + 搜索验证码 | www.sbdl.cc，搜索需图片验证码 | [dalvdm_data_source.json](sources/dalvdm_data_source.json) |
+| E站弹幕网 | HTML + steps | m.ezdmw.org（移动站） | [ezdmw_data_source.json](sources/ezdmw_data_source.json) |
+| 青空次元 | JSON | api.sorani.cc，REST 接口源（业务码 code:200） | [sorani_data_source.json](sources/sorani_data_source.json) |
+| MiliMili | JSON + POST + 登录 | milimili.moe，Connect-RPC 接口源（播放需账号登录） | [milimili_data_source.json](sources/milimili_data_source.json) |
+<!-- sources-table:end -->
 
 ## 如何导入
 
@@ -70,11 +84,12 @@ AnimeZ 规则仓库 —— 为 [AnimeZ](https://github.com/XHXYT/AnimeZ) 编写�
 
 约定：
 
-- `key` 全局唯一，建议 `key_` + 拼音/英文缩写（如 `key_fqdmdm`）；
+- `key` 全局唯一，建议 `key_` + 拼音/英文缩写（如 `key_dmdm`）；
 - `version` 语义化，每次修改记得递增；
 - `update_time` 与实际修改日期一致；
 - 站点接口若需要固定请求头，写在 `parserConfig.requestHeaders`，不要硬编码进 URL；
-- 不要提交任何账号、密码、Cookie 等私人信息。
+- 不要提交任何账号、密码、Cookie 等私人信息；
+- 「可用规则」表由 `node scripts/update-readme.js` 扫描 `sources/` 目录自动生成（顺序与说明文字在脚本内维护），提交 PR 时**无需手动编辑 README 表格**。
 
 ## 反馈
 

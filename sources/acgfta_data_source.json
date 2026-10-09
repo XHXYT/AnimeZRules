@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
   "author": "user",
-  "update_time": "2026-09-30",
+  "update_time": "2026-10-03",
   "sources": [
     {
       "key": "key_acgfta",
@@ -11,8 +11,9 @@
       "baseUrl": "https://acgfta.com",
       "enabled": true,
       "priority": 10,
-      "description": "饭团动漫 acgfta.com：首页今日番剧轮播 + 最近更新/剧场版独立页面卡片 + 周表（首页星期区块按标题定位，HTML卡片模式）",
+      "description": "饭团动漫 acgfta.com：首页今日番剧轮播 + 最近更新/剧场版独立页面卡片 + 周表",
       "defaultSource": false,
+      "adFilter": true,
       "parserConfig": {
         "search": {
           "videos": {

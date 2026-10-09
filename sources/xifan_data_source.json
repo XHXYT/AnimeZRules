@@ -11,7 +11,7 @@
       "version": "1.0.1",
       "enabled": true,
       "priority": 16,
-      "description": "稀饭动漫 next.xifanacg.com（Supabase PostgREST JSON 源；播放地址通过隐藏 WebView 在站点播放页内解析，需设备网络可正常访问站点） + 周表（update_weekday 直连查询）",
+      "description": "稀饭动漫 next.xifanacg.com（需设备网络可正常访问站点）",
       "defaultSource": false,
       "parserConfig": {
         "sourceType": "json",

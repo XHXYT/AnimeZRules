@@ -1,0 +1,172 @@
+{
+  "version": "1.0.0",
+  "author": "user",
+  "update_time": "2026-10-04",
+  "sources": [
+    {
+      "key": "key_mutefun",
+      "version": "1.0.0",
+      "name": "MuteFun",
+      "group": "动漫",
+      "baseUrl": "https://www.2kdm.com",
+      "enabled": true,
+      "priority": 24,
+      "description": "MuteFun 无声动漫 www.2kdm.com，搜索需图片验证码",
+      "defaultSource": false,
+      "parserConfig": {
+        "search": {
+          "videos": {
+            "urlTemplate": "/vodsearch/-------------.html?wd={keyword}",
+            "listSelector": "div.module-card-item",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a.module-card-item-poster@href",
+              "imgUrl": "img@data-original",
+              "title": ".module-card-item-title strong",
+              "episode": ".module-item-note"
+            }
+          },
+          "captcha": {
+            "detectSelector": "input.mac_verify",
+            "imageUrlSelector": "",
+            "imageUrlTemplate": "/index.php/verify/index.html?",
+            "imageCacheBustParam": "r",
+            "verifyUrlTemplate": "/index.php/ajax/verify_check?type=search&verify={code}",
+            "successContains": "\"code\":1"
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "",
+            "listSelector": ".sm-swiper .swiper-slide",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "a@href",
+              "imgUrl": "img@src",
+              "title": ".title",
+              "episode": ".ins p"
+            }
+          },
+          "category": {
+            "title": "",
+            "titles": "",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "a.module-poster-item",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "url": "@href",
+                "imgUrl": "img@data-original",
+                "title": ".module-poster-item-title",
+                "episode": ".module-item-note"
+              }
+            },
+            "cards": [
+              {
+                "title": "日漫",
+                "url": "/vodtype/20.html",
+                "moreUrl": "",
+                "listSelector": "a.module-poster-item",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "@href",
+                  "imgUrl": "img@data-original",
+                  "title": ".module-poster-item-title",
+                  "episode": ".module-item-note"
+                }
+              },
+              {
+                "title": "美漫",
+                "url": "/vodtype/24.html",
+                "moreUrl": "",
+                "listSelector": "a.module-poster-item",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "@href",
+                  "imgUrl": "img@data-original",
+                  "title": ".module-poster-item-title",
+                  "episode": ".module-item-note"
+                }
+              },
+              {
+                "title": "特摄",
+                "url": "/vodtype/25.html",
+                "moreUrl": "",
+                "listSelector": "a.module-poster-item",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "@href",
+                  "imgUrl": "img@data-original",
+                  "title": ".module-poster-item-title",
+                  "episode": ".module-item-note"
+                }
+              },
+              {
+                "title": "日剧",
+                "url": "/vodtype/26.html",
+                "moreUrl": "",
+                "listSelector": "a.module-poster-item",
+                "maxItems": 12,
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "itemSelectors": {
+                  "url": "@href",
+                  "imgUrl": "img@data-original",
+                  "title": ".module-poster-item-title",
+                  "episode": ".module-item-note"
+                }
+              }
+            ]
+          }
+        },
+        "detail": {
+          "titleSelector": ".module-info-heading h1",
+          "descSelector": ".module-info-introduction-content p",
+          "coverSelector": ".module-info-poster img@data-original",
+          "episodes": {
+            "routeTitlesSelector": "#y-playList .module-tab-item > span",
+            "routeContainersSelector": "#panel1 .module-play-list-content",
+            "routeExcludeKeywords": [
+              "APP专线"
+            ],
+            "itemSelector": ".module-play-list-link",
+            "itemSelectors": {
+              "url": "@href",
+              "title": "span"
+            }
+          },
+          "recommends": {
+            "listSelector": "a.module-poster-item",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "url": "@href",
+              "imgUrl": "img@data-original",
+              "title": ".module-poster-item-title",
+              "episode": ".module-item-note"
+            }
+          }
+        },
+        "videoUrl": {
+          "pattern": "regex",
+          "urlSelector": "player_aaaa=({.*?})</script>",
+          "postProcess": "script:var p=JSON.parse(result);return 'https://www.2kdm.com/addons/dp/player/dp.php?key=0&from='+encodeURIComponent(p.from)+'&id='+encodeURIComponent(p.id)+'&api=&url='+encodeURIComponent(p.url)+'&jump=';",
+          "iframeSelector": "(function(){function ok(u){return (typeof u=='string'&&u.indexOf('http')==0&&(u.indexOf('.mp4')>=0||u.indexOf('.m3u8')>=0))?u:'';}function post(u){try{window.animeBridge.onLink(u);}catch(e){}}function grab(){try{var c=window.config;if(c){var u=ok(c.url);if(u)return u;}}catch(e){}try{var m=document.documentElement.innerHTML.match(/\"url\"\\s*:\\s*\"(https?:[^\"]+?\\.(?:mp4|m3u8)[^\"]*)\"/);if(m){var u2=ok(m[1]);if(u2)return u2;}}catch(e){}return '';}var r=grab();if(r){return r;}var iv=setInterval(function(){var x=grab();if(x){clearInterval(iv);post(x);}},300);setTimeout(function(){clearInterval(iv);},60000);return 'PENDING';})()"
+        }
+      },
+      "update_time": "2026-10-06"
+    }
+  ]
+}

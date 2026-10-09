@@ -1,0 +1,184 @@
+{
+  "version": "1.0.3",
+  "author": "user",
+  "update_time": "2026-10-09",
+  "sources": [
+    {
+      "key": "key_sorani",
+      "version": "1.0.3",
+      "name": "青空次元",
+      "group": "动漫",
+      "baseUrl": "https://api.sorani.cc",
+      "enabled": true,
+      "priority": 30,
+      "description": "青空次元 api.sorani.cc，首页对齐主页区块（轮播/最新更新/热门推荐/TV番剧/剧场版，卡片12条+分页更多）",
+      "defaultSource": false,
+      "parserConfig": {
+        "sourceType": "json",
+        "requestHeaders": {
+          "Accept": "application/json",
+          "Origin": "https://www.sorani.net",
+          "Referer": "https://www.sorani.net/"
+        },
+        "search": {
+          "videos": {
+            "urlTemplate": "/sorani-cms/api/video?page={page}&size=50&keyword={keyword}&enabled=true&sortMode=latest&sortDesc=false",
+            "listSelector": "data.records",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "title": "{title}",
+              "url": "{baseUrl}/sorani-cms/api/video/{id}",
+              "imgUrl": "{cover}",
+              "episode": "{latestEpisodeLabel}"
+            }
+          }
+        },
+        "homepage": {
+          "banner": {
+            "urlTemplate": "/sorani-cms/api/video/recommend",
+            "listSelector": "data",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "title": "{title}",
+              "url": "{baseUrl}/sorani-cms/api/video/{id}",
+              "imgUrl": "{backgroundImage}",
+              "episode": "{latestEpisodeLabel}"
+            }
+          },
+          "category": {
+            "title": "",
+            "titles": "",
+            "moreUrl": "",
+            "moreUrlNeedBaseUrl": false,
+            "videoLists": "",
+            "videos": {
+              "urlTemplate": "",
+              "listSelector": "data.records",
+              "urlNeedBaseUrl": true,
+              "enabledHttps": true,
+              "itemSelectors": {
+                "title": "{title}",
+                "url": "{baseUrl}/sorani-cms/api/video/{id}",
+                "imgUrl": "{cover}",
+                "episode": "{latestEpisodeLabel}"
+              }
+            },
+            "cards": [
+              {
+                "title": "最新更新",
+                "url": "/sorani-cms/api/video?page=1&size=12&enabled=true&sortMode=latest&sortDesc=true",
+                "moreUrl": "/sorani-cms/api/video?page={page}&size=50&enabled=true&sortMode=latest&sortDesc=true",
+                "listPath": "data.records",
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "maxItems": 12,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{baseUrl}/sorani-cms/api/video/{id}",
+                  "imgUrl": "{cover}",
+                  "episode": "{latestEpisodeLabel}"
+                }
+              },
+              {
+                "title": "热门推荐",
+                "url": "/sorani-cms/api/video/recommend",
+                "moreUrl": "/sorani-cms/api/video?page={page}&size=50&enabled=true&sortMode=rating&sortDesc=true",
+                "listPath": "data",
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "maxItems": 12,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{baseUrl}/sorani-cms/api/video/{id}",
+                  "imgUrl": "{cover}",
+                  "episode": "{latestEpisodeLabel}"
+                }
+              },
+              {
+                "title": "TV番剧",
+                "url": "/sorani-cms/api/video?page=1&size=12&enabled=true&categoryId=1",
+                "moreUrl": "/sorani-cms/api/video?page={page}&size=50&enabled=true&categoryId=1",
+                "listPath": "data.records",
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "maxItems": 12,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{baseUrl}/sorani-cms/api/video/{id}",
+                  "imgUrl": "{cover}",
+                  "episode": "{latestEpisodeLabel}"
+                }
+              },
+              {
+                "title": "剧场版",
+                "url": "/sorani-cms/api/video?page=1&size=12&enabled=true&categoryId=2",
+                "moreUrl": "/sorani-cms/api/video?page={page}&size=50&enabled=true&categoryId=2",
+                "listPath": "data.records",
+                "urlNeedBaseUrl": true,
+                "enabledHttps": true,
+                "maxItems": 12,
+                "itemSelectors": {
+                  "title": "{title}",
+                  "url": "{baseUrl}/sorani-cms/api/video/{id}",
+                  "imgUrl": "{cover}",
+                  "episode": "{latestEpisodeLabel}"
+                }
+              }
+            ]
+          }
+        },
+        "detail": {
+          "dataPath": "data",
+          "titleSelector": "{title}",
+          "descSelector": "{summary}",
+          "coverSelector": "{cover}",
+          "categorySelector": "{categoryName}",
+          "directorSelector": "{director}",
+          "updateTimeSelector": "{updateTime}",
+          "episodes": {
+            "jsonListPath": "episodes",
+            "itemSelector": "",
+            "itemSelectors": {
+              "title": "{episodeLabel}",
+              "url": "{baseUrl}/sorani-cms/api/video/episode/{episodeId}/play"
+            }
+          },
+          "recommends": {
+            "jsonUrlTemplate": "/sorani-cms/api/video?page=1&size=12&enabled=true&sortMode=latest&sortDesc=false&categoryId={video.categoryId}",
+            "listSelector": "data.records",
+            "urlNeedBaseUrl": true,
+            "enabledHttps": true,
+            "itemSelectors": {
+              "title": "{title}",
+              "url": "{baseUrl}/sorani-cms/api/video/{id}",
+              "imgUrl": "{cover}",
+              "episode": "{latestEpisodeLabel}"
+            }
+          }
+        },
+        "videoUrl": {
+          "pattern": "json",
+          "valuePath": "data.playUrl",
+          "proxy": {
+            "type": "tsStrip",
+            "referer": "https://www.sorani.net/"
+          }
+        },
+        "schedule": {
+          "urlTemplate": "/sorani-cms/api/video?page=1&size=50&enabled=true&updateWeekday={weekday}",
+          "listSelector": "data.records",
+          "urlNeedBaseUrl": true,
+          "enabledHttps": true,
+          "itemSelectors": {
+            "title": "{title}",
+            "url": "{baseUrl}/sorani-cms/api/video/{id}",
+            "imgUrl": "{cover}",
+            "episode": "{latestEpisodeLabel}"
+          }
+        }
+      }
+    }
+  ]
+}
